@@ -3,13 +3,92 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --height-header: 4rem;
+  
+  /* Light mode colors (default) */
+  --color-background-base: #ffffff;
+  --color-background-highlight: #f6f6f6;
+  --color-background-press: #e8e8e8;
+  --color-background-elevated-base: #f6f6f6;
+  --color-background-elevated-highlight: #ececec;
+  --color-background-elevated-press: #e0e0e0;
+  --color-background-tinted-base: #0000000d;
+  --color-background-tinted-highlight: #00000014;
+  --color-background-tinted-press: #0000001f;
+  --color-text-base: #000000;
+  --color-text-subdued: #6a6a6a;
+  --color-text-negative: #d41b2c;
+  --color-text-warning: #ff8800;
+  --color-text-positive: #1ed760;
+  --color-text-announcement: #0d72ea;
+  --essential-base: #000000;
+  --color-essential-subdued: #878787;
+  --color-essential-bright-accent: #1ed760;
+  --color-essential-negative: #d41b2c;
+  --color-essential-warning: #ff8800;
+  --color-essential-positive: #1ed760;
+  --color-essential-announcement: #0d72ea;
+  --color-decorative-base: #000000;
+  --color-decorative-subdued: #e5e5e5;
+}
+
+.dark {
+  /* Dark mode colors */
+  --color-background-base: #121212;
+  --color-background-highlight: #1f1f1f;
+  --color-background-press: #000;
+  --color-background-elevated-base: #1f1f1f;
+  --color-background-elevated-highlight: #2a2a2a;
+  --color-background-elevated-press: #191919;
+  --color-background-tinted-base: #ffffff1a;
+  --color-background-tinted-highlight: #ffffff24;
+  --color-background-tinted-press: #ffffff36;
+  --color-text-base: #fff;
+  --color-text-subdued: #b3b3b3;
+  --color-text-negative: #f3727f;
+  --color-text-warning: #ffa42b;
+  --color-text-positive: #1ed760;
+  --color-text-announcement: #4cb3ff;
+  --essential-base: #fff;
+  --color-essential-subdued: #7c7c7c;
+  --color-essential-bright-accent: #1ed760;
+  --color-essential-negative: #ed2c3f;
+  --color-essential-warning: #ffa42b;
+  --color-essential-positive: #1ed760;
+  --color-essential-announcement: #4cb3ff;
+  --color-decorative-base: #fff;
+  --color-decorative-subdued: #292929;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-spotify);
+  --color-background-base: var(--color-background-base);
+  --color-background-highlight: var(--color-background-highlight);
+  --color-background-press: var(--color-background-press);
+  --color-background-elevated-base: var(--color-background-elevated-base);
+  --color-background-elevated-highlight: var(--color-background-elevated-highlight);
+  --color-background-elevated-press: var(--color-background-elevated-press);
+  --color-background-tinted-base: var(--color-background-tinted-base);
+  --color-background-tinted-highlight: var(--color-background-tinted-highlight);
+  --color-background-tinted-press: var(--color-background-tinted-press);
+  --color-text-base: var(--color-text-base);
+  --color-text-subdued: var(--color-text-subdued);
+  --color-text-negative: var(--color-text-negative);
+  --color-text-warning: var(--color-text-warning);
+  --color-text-positive: var(--color-text-positive);
+  --color-text-announcement: var(--color-text-announcement);
+  --essential-base: var(--essential-base);
+  --color-essential-subdued: var(--color-essential-subdued);
+  --color-essential-bright-accent: var(--color-essential-bright-accent);
+  --color-essential-negative: var(--color-essential-negative);
+  --color-essential-warning: var(--color-essential-warning);
+  --color-essential-positive: var(--color-essential-positive);
+  --color-essential-announcement: var(--color-essential-announcement);
+  --color-decorative-base: var(--color-decorative-base);
+  --color-decorative-subdued: var(--color-decorative-subdued);
+  --height-header: var(--height-header);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -20,7 +99,50 @@
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-background-base);
+  color: var(--color-text-base);
+  font-family: var(--font-spotify), Arial, Helvetica, sans-serif;
+}
+
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-background-elevated-highlight) var(--color-background-base);
+}
+
+/* Estilos para sliders */
+input[type="range"] {
+  background: transparent;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-essential-bright-accent);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  border: 2px solid var(--color-background-base);
+  transition: transform 0.2s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+input[type="range"]::-moz-range-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-essential-bright-accent);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  border: 2px solid var(--color-background-base);
+  transition: transform 0.2s ease;
+}
+
+input[type="range"]::-moz-range-thumb:hover {
+  transform: scale(1.1);
 }
