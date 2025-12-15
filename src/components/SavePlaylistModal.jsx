@@ -59,7 +59,7 @@ export default function SavePlaylistModal({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-background-base bg-opacity-75 flex items-center justify-center z-50 p-4">
             <div className="bg-background-elevated-base grid grid-cols-1 sm:grid-cols-2 rounded-lg p-4 sm:p-6 max-w-md w-full border border-background-elevated-highlight">
                 <h2 className="text-xl sm:text-2xl font-bold mb-4 col-span-1 sm:col-span-2">Save to Spotify</h2>
                 
@@ -81,7 +81,7 @@ export default function SavePlaylistModal({
                                         alt="Playlist cover"
                                         className="w-full h-full object-cover rounded-lg"
                                     />
-                                    <div className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg">
+                                    <div className="absolute inset-0 flex items-center justify-center bg-background-base/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg">
                                         <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                         </svg>

@@ -46,7 +46,7 @@ export default function Modal({ isOpen, onClose, title, message, type = 'info' }
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background-base/70 animate-in fade-in duration-200">
             <div className="bg-background-elevated-base border border-background-elevated-highlight rounded-lg shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-200">
                 <div className="flex flex-col items-center text-center">
                     {getIcon()}

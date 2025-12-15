@@ -62,7 +62,7 @@ export function Header(){
 
 
     return(
-        <header className="flex items-center justify-start bg-background-base w-screen h-header py-2 px-4 sm:px-6 gap-4 sm:gap-8 lg:gap-16 z-20">
+        <header className="flex border-b border-background-inverse/20 items-center justify-start bg-background-base w-screen h-header py-2 px-4 sm:px-6 gap-4 sm:gap-8 lg:gap-16 z-20">
             
             {/* Logo Spotify */}
             <Link href='/' className="h-full cursor-pointer flex items-center">
@@ -83,24 +83,24 @@ export function Header(){
                     onClick={() => setShowMobileMenu(!showMobileMenu)}
                     className="lg:hidden flex flex-col gap-1.5 p-2 ml-auto"
                 >
-                    <span className={`block w-6 h-0.5 bg-text-base transition-all duration-300 ${showMobileMenu ? 'rotate-45 translate-y-2' : ''}`}></span>
-                    <span className={`block w-6 h-0.5 bg-text-base transition-all duration-300 ${showMobileMenu ? 'opacity-0' : ''}`}></span>
-                    <span className={`block w-6 h-0.5 bg-text-base transition-all duration-300 ${showMobileMenu ? '-rotate-45 -translate-y-2' : ''}`}></span>
+                    <span className={`block w-6 h-0.5 bg-background-inverse transition-all duration-300 ${showMobileMenu ? 'rotate-45 translate-y-2' : ''}`}></span>
+                    <span className={`block w-6 h-0.5 bg-background-inverse transition-all duration-300 ${showMobileMenu ? 'opacity-0' : ''}`}></span>
+                    <span className={`block w-6 h-0.5 bg-background-inverse transition-all duration-300 ${showMobileMenu ? '-rotate-45 -translate-y-2' : ''}`}></span>
                 </button>
             )}
 
             {/* Mobile Menu Overlay */}
             {showMobileMenu && isClient && isAuthenticated && (
-                <div className="lg:hidden fixed inset-0 bg-black bg-opacity-95 z-40 flex flex-col items-start justify-start p-6">
+                <div className="lg:hidden fixed inset-0 bg-background-base bg-opacity-95 z-40 flex flex-col items-start justify-start p-6">
                     <button 
                         onClick={() => setShowMobileMenu(false)}
-                        className="absolute top-6 right-6 text-white text-3xl"
+                        className="absolute top-6 right-6 text-3xl"
                     >
                         ✕
                     </button>
                     
                     {/* User Profile Section */}
-                    <div className="flex items-center gap-4 mb-8 pb-6 border-b border-white/20 w-full">
+                    <div className="flex items-center gap-4 mb-8 pb-6 border-b border-background-inverse/20 w-full">
                         <img 
                             src={user?.images[0]?.url} 
                             className="w-16 h-16 rounded-full border-2 border-background-elevated-highlight"
@@ -112,7 +112,7 @@ export function Header(){
                                 {user?.product === 'premium' && (
                                     <PremiumBadge className="text-essential-bright-accent" />
                                 )}
-                                <span className="text-sm text-white/70">{user?.id}</span>
+                                <span className="text-sm text-text-base/70">{user?.id}</span>
                                 <a 
                                     className="hover:scale-110 transition-transform" 
                                     href={user?.external_urls?.spotify}
@@ -127,29 +127,25 @@ export function Header(){
 
                     {/* Navigation */}
                     <nav className="flex flex-col items-start gap-6 text-2xl font-extrabold w-full mb-8">
-                        <Link href="/" onClick={() => setShowMobileMenu(false)} className={`transition-colors ${pathname === '/' ? 'text-white' : 'text-text-subdued hover:text-white'}`}>Home</Link>
-                        <Link href="/dashboard" onClick={() => setShowMobileMenu(false)} className={`transition-colors ${pathname === '/dashboard' ? 'text-white' : 'text-text-subdued hover:text-white'}`}>Dashboard</Link>
-                        <Link href="/favorites" onClick={() => setShowMobileMenu(false)} className={`transition-colors ${pathname === '/favorites' ? 'text-white' : 'text-text-subdued hover:text-white'}`}>Favorites</Link>
-                        <Link href="/history" onClick={() => setShowMobileMenu(false)} className={`transition-colors ${pathname === '/history' ? 'text-white' : 'text-text-subdued hover:text-white'}`}>History</Link>
+                        <Link href="/" onClick={() => setShowMobileMenu(false)} className={`transition-colors ${pathname === '/' ? 'text-text-base' : 'text-text-subdued hover:text-2xltext-base'}`}>Home</Link>
+                        <Link href="/dashboard" onClick={() => setShowMobileMenu(false)} className={`transition-colors ${pathname === '/dashboard' ? 'text-text-base' : 'text-text-subdued hover:text-2xltext-base'}`}>Dashboard</Link>
+                        <Link href="/favorites" onClick={() => setShowMobileMenu(false)} className={`transition-colors ${pathname === '/favorites' ? 'text-text-base' : 'text-text-subdued hover:text-2xltext-base'}`}>Favorites</Link>
+                        <Link href="/history" onClick={() => setShowMobileMenu(false)} className={`transition-colors ${pathname === '/history' ? 'text-text-base' : 'text-text-subdued hover:text-2xltext-base'}`}>History</Link>
                     </nav>
 
                     {/* Theme Toggle */}
                     <button
                         onClick={toggleTheme}
-                        className="w-full py-3 px-6 rounded-full bg-background-elevated-highlight text-white font-semibold hover:opacity-90 transition-opacity mb-4 flex items-center justify-center gap-3"
+                        className="w-full border border-text-base/10 py-3 px-6 rounded-full bg-background-elevated-base text-text-subdued hover:bg-background-elevated-highlight font-semibold transition-all mb-4 flex items-center justify-center gap-3"
                     >
                         {theme === 'light' ? (
                             <>
-                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
-                                </svg>
+                                <svg fill="currentColor" className="w-5 h-5" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 0 1 6.707 2.707a8.001 8.001 0 1 0 10.586 10.586"/></svg>
                                 Dark Mode
                             </>
                         ) : (
                             <>
-                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd"></path>
-                                </svg>
+                                <svg fill="currentColor" className="w-5 h-5" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 2a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1m4 8a4 4 0 1 1-8 0 4 4 0 0 1 8 0m-.464 4.95.707.707a1 1 0 0 0 1.414-1.414l-.707-.707a1 1 0 0 0-1.414 1.414m2.12-10.607a1 1 0 0 1 0 1.414l-.706.707a1 1 0 1 1-1.414-1.414l.707-.707a1 1 0 0 1 1.414 0zM17 11a1 1 0 1 0 0-2h-1a1 1 0 1 0 0 2zm-7 4a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0v-1a1 1 0 0 1 1-1M5.05 6.464A1 1 0 1 0 6.465 5.05l-.708-.707a1 1 0 0 0-1.414 1.414zm1.414 8.486-.707.707a1 1 0 0 1-1.414-1.414l.707-.707a1 1 0 0 1 1.414 1.414M4 11a1 1 0 1 0 0-2H3a1 1 0 0 0 0 2z" clipRule="evenodd"/></svg>
                                 Light Mode
                             </>
                         )}
@@ -161,7 +157,7 @@ export function Header(){
                             handleLogout();
                             setShowMobileMenu(false);
                         }}
-                        className="w-full py-3 px-6 rounded-full bg-background-elevated-highlight text-white font-semibold hover:opacity-90 transition-opacity"
+                        className="w-full py-3 px-6 rounded-full border border-text-base/10 bg-background-elevated-base text-text-subdued hover:bg-background-elevated-highlight font-semibold transition-all"
                     >
                         Logout
                     </button>
@@ -172,7 +168,7 @@ export function Header(){
             {isClient && isAuthenticated ? (
                 <div className="hidden lg:block h-full relative ml-auto">
                     {/* Imagen y nombre usuario */}
-                    <button onClick={() => setShowUserMenu(!showUserMenu)} className="h-full flex items-center gap-2 sm:gap-4">
+                    <button onClick={() => setShowUserMenu(!showUserMenu)} className="h-full flex items-center gap-2 sm:gap-4 ">
                         <span className="font-mono font-semibold text-sm md:text-base">{user?.display_name}</span>
                         <img src={user?.images[0]?.url} className="aspect-square h-full rounded-full border-2 border-background-elevated-highlight hover:scale-105 duration-300 cursor-pointer"></img>
                     </button>
@@ -180,7 +176,10 @@ export function Header(){
                     {/* Menu usuario */}
                     {showUserMenu && (
                         <div className="absolute right-0 w-full p-1 mt-1 divide-y divide-background-elevated-highlight origin-top-right rounded-md bg-background-elevated-base border border-background-elevated-highlight transition transition-discrete shadow-lg z-50">
-                            
+                            <div 
+                                className="fixed inset-0 z-10" 
+                                onClick={() => setShowUserMenu(false)}
+                            />
                             {/* Informacion usuario */}
                             <div className="py-1">
                                 <div className="flex items-center justify-start gap-2 px-4 py-2">

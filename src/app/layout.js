@@ -19,7 +19,7 @@ const spotifyFont = localFont({
 });
 
 export const metadata = {
-  title: "Spotify Taste Mixer",
+  title: "Spotify MixWave",
   description: "Creador de playlist",
   icons: {
     icon: [

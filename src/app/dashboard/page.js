@@ -58,6 +58,40 @@ export default function Dashboard() {
         }
     }, [isAuthenticated, isLoading, router]);
 
+    // Load saved playlist from localStorage
+    useEffect(() => {
+        if (typeof window !== 'undefined' && isAuthenticated) {
+            const savedPlaylist = localStorage.getItem('current_playlist');
+            if (savedPlaylist) {
+                try {
+                    const { playlist: savedTracks, timestamp } = JSON.parse(savedPlaylist);
+                    // Load playlist if it's less than 1 hour old
+                    if (Date.now() - timestamp < 60 * 60 * 1000) {
+                        setPlaylist(savedTracks);
+                        setHasGenerated(true);
+                    } else {
+                        localStorage.removeItem('current_playlist');
+                    }
+                } catch (e) {
+                    console.error('Error loading playlist:', e);
+                }
+            }
+        }
+    }, [isAuthenticated]);
+
+    // Save playlist to localStorage whenever it changes
+    useEffect(() => {
+        if (typeof window !== 'undefined' && playlist.length > 0) {
+            const dataToStore = {
+                playlist,
+                timestamp: Date.now()
+            };
+            localStorage.setItem('current_playlist', JSON.stringify(dataToStore));
+        } else if (typeof window !== 'undefined' && playlist.length === 0 && hasGenerated) {
+            localStorage.removeItem('current_playlist');
+        }
+    }, [playlist, hasGenerated]);
+
     const saveToHistory = (tracks) => {
         if (typeof window === 'undefined' || tracks.length === 0 || tracks.length > 100) return;
         
@@ -184,7 +218,7 @@ export default function Dashboard() {
         <div className="min-h-[calc(100vh-4rem)] lg:h-[calc(100vh-4rem)] px-3 sm:px-4 md:px-6 lg:overflow-hidden" suppressHydrationWarning>
             <div className="h-full flex flex-col lg:flex-row gap-4 md:gap-6">
                 {/* Widgets Section */}
-                <div className="flex-1 lg:overflow-y-auto p-1 sm:p-2">
+                <div className="flex-1 lg:overflow-y-auto lg:h-full p-1 sm:p-2">
                     <div className="flex flex-col gap-4 md:gap-6 pb-6">
                         <GenreWidget onSelect={toggleGenre} selectedItems={genres}/>
                         <DecadeWidget onSelect={setDecades} selectedItems={decades}/>
@@ -199,7 +233,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* Playlist Section */}
-                <div className="w-full lg:w-[500px] p-1 sm:p-2 flex flex-col gap-4 lg:overflow-y-auto">
+                <div className="w-full lg:w-1/3 lg:h-full p-1 sm:p-2 flex flex-col gap-4 lg:overflow-y-auto">
                     <PlaylistControls
                         numSongs={numSongs}
                         onNumSongsChange={setNumSongs}

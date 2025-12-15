@@ -6,6 +6,9 @@ import { FaArrowUpRightFromSquare as RedirectIcon } from "react-icons/fa6";
 import { getUserSavedTracks } from '@/lib/spotify';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { useModal } from '@/hooks/useModal';
+import Modal from '@/components/Modal';
+import ConfirmModal from '@/components/ConfirmModal';
 
 function SpotifyLikedSongs() {
     const [likedSongs, setLikedSongs] = useState([]);
@@ -15,6 +18,8 @@ function SpotifyLikedSongs() {
         loadLikedSongs();
     }, []);
 
+    const { modal: modalSpotify, showModal: showModalSpotify, closeModal: closeModalSpotify } = useModal();
+    
     const loadLikedSongs = async () => {
         setIsLoading(true);
         try {
@@ -24,6 +29,7 @@ function SpotifyLikedSongs() {
             setLikedSongs(response.data.items);
         } catch (error) {
             console.error('Error loading liked songs:', error);
+            showModalSpotify('Error', 'Failed to load liked songs from Spotify.', 'error');
         } finally {
             setIsLoading(false);
         }
@@ -120,6 +126,14 @@ function SpotifyLikedSongs() {
                     );
                 })}
             </div>
+            
+            <Modal 
+                isOpen={modalSpotify.isOpen}
+                onClose={closeModalSpotify}
+                title={modalSpotify.title}
+                message={modalSpotify.message}
+                type={modalSpotify.type}
+            />
         </div>
     );
 }
@@ -127,11 +141,14 @@ function SpotifyLikedSongs() {
 export default function FavoritesPage() {
     const router = useRouter();
     const { isAuthenticated, isLoading } = useAuth();
+    const { modal, showModal, closeModal } = useModal();
     const [favorites, setFavorites] = useState([]);
     const [spotifyFavorites, setSpotifyFavorites] = useState([]);
     const [isClient, setIsClient] = useState(false);
     const [activeTab, setActiveTab] = useState('local'); // 'local' | 'spotify'
-    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [showClearConfirm, setShowClearConfirm] = useState(false);
+    const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
+    const [trackToRemove, setTrackToRemove] = useState(null);
 
     useEffect(() => {
         if (isLoading) return;
@@ -154,21 +171,31 @@ export default function FavoritesPage() {
 
     const removeFavorite = (trackId) => {
         if (typeof window === 'undefined') return;
-        
-        const updatedFavorites = favorites.filter(f => f.id !== trackId);
-        setFavorites(updatedFavorites);
-        localStorage.setItem('favorite_tracks', JSON.stringify(updatedFavorites));
+        setTrackToRemove(trackId);
+        setShowRemoveConfirm(true);
+    };
+
+    const confirmRemove = () => {
+        if (trackToRemove) {
+            const updatedFavorites = favorites.filter(f => f.id !== trackToRemove);
+            setFavorites(updatedFavorites);
+            localStorage.setItem('favorite_tracks', JSON.stringify(updatedFavorites));
+            showModal('Success', 'Track removed from favorites!', 'success');
+        }
+        setShowRemoveConfirm(false);
+        setTrackToRemove(null);
     };
 
     const clearAllFavorites = () => {
         if (typeof window === 'undefined') return;
-        setShowConfirmModal(true);
+        setShowClearConfirm(true);
     };
 
     const confirmClearAll = () => {
         setFavorites([]);
         localStorage.setItem('favorite_tracks', JSON.stringify([]));
-        setShowConfirmModal(false);
+        setShowClearConfirm(false);
+        showModal('Success', 'All favorites cleared successfully!', 'success');
     };
 
     if (!isClient) {
@@ -317,31 +344,34 @@ export default function FavoritesPage() {
                 <SpotifyLikedSongs />
             )}
 
-            {/* Confirm Modal */}
-            {showConfirmModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-                    <div className="bg-background-elevated-base rounded-lg p-6 max-w-md w-full border border-background-elevated-highlight">
-                        <h2 className="text-xl font-bold mb-4">Clear All Favorites</h2>
-                        <p className="text-text-subdued mb-6">
-                            Are you sure you want to clear all favorites? This action cannot be undone.
-                        </p>
-                        <div className="flex gap-3 justify-end">
-                            <button
-                                onClick={() => setShowConfirmModal(false)}
-                                className="px-4 py-2 rounded-full bg-background-elevated-highlight hover:bg-background-elevated-press transition-colors duration-200 font-medium"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={confirmClearAll}
-                                className="px-4 py-2 rounded-full bg-essential-negative text-white hover:opacity-90 transition-opacity duration-200 font-medium"
-                            >
-                                Clear All
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <ConfirmModal
+                isOpen={showClearConfirm}
+                onClose={() => setShowClearConfirm(false)}
+                onConfirm={confirmClearAll}
+                title="Clear All Favorites"
+                message="Are you sure you want to clear all favorites? This action cannot be undone."
+                confirmText="Clear All"
+            />
+
+            <ConfirmModal
+                isOpen={showRemoveConfirm}
+                onClose={() => {
+                    setShowRemoveConfirm(false);
+                    setTrackToRemove(null);
+                }}
+                onConfirm={confirmRemove}
+                title="Remove from Favorites"
+                message="Are you sure you want to remove this track from your favorites?"
+                confirmText="Remove"
+            />
+
+            <Modal 
+                isOpen={modal.isOpen}
+                onClose={closeModal}
+                title={modal.title}
+                message={modal.message}
+                type={modal.type}
+            />
         </div>
     );
 }

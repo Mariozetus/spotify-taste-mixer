@@ -6,15 +6,19 @@ import { FaArrowUpRightFromSquare as RedirectIcon } from "react-icons/fa6";
 import { savePlaylistToSpotify } from '@/lib/spotify';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { useModal } from '@/hooks/useModal';
+import Modal from '@/components/Modal';
+import ConfirmModal from '@/components/ConfirmModal';
 
 export default function HistoryPage() {
     const router = useRouter();
     const { isAuthenticated, isLoading } = useAuth();
+    const { modal, showModal, closeModal } = useModal();
     const [history, setHistory] = useState([]);
     const [isClient, setIsClient] = useState(false);
     const [selectedPlaylist, setSelectedPlaylist] = useState(null);
-    const [showClearModal, setShowClearModal] = useState(false);
-    const [showRemoveModal, setShowRemoveModal] = useState(false);
+    const [showClearConfirm, setShowClearConfirm] = useState(false);
+    const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
     const [playlistToRemove, setPlaylistToRemove] = useState(null);
 
     useEffect(() => {
@@ -39,7 +43,7 @@ export default function HistoryPage() {
     const removePlaylist = (index) => {
         if (typeof window === 'undefined') return;
         setPlaylistToRemove(index);
-        setShowRemoveModal(true);
+        setShowRemoveConfirm(true);
     };
 
     const confirmRemove = () => {
@@ -50,21 +54,23 @@ export default function HistoryPage() {
             if (selectedPlaylist === playlistToRemove) {
                 setSelectedPlaylist(null);
             }
+            showModal('Success', 'Playlist removed from history!', 'success');
         }
-        setShowRemoveModal(false);
+        setShowRemoveConfirm(false);
         setPlaylistToRemove(null);
     };
 
     const clearAllHistory = () => {
         if (typeof window === 'undefined') return;
-        setShowClearModal(true);
+        setShowClearConfirm(true);
     };
 
     const confirmClearAll = () => {
         setHistory([]);
         localStorage.setItem('playlist_history', JSON.stringify([]));
         setSelectedPlaylist(null);
-        setShowClearModal(false);
+        setShowClearConfirm(false);
+        showModal('Success', 'All history cleared successfully!', 'success');
     };
 
     const handleSaveToSpotify = async (playlist) => {
@@ -75,12 +81,13 @@ export default function HistoryPage() {
                 'Created with Spotify Taste Mixer from history'
             );
             if (result.success) {
-                alert('Playlist saved to Spotify successfully!');
+                showModal('Success!', 'Playlist saved to Spotify successfully!', 'success');
                 window.open(result.playlistUrl, '_blank');
             }
         } catch (error) {
             console.error('Error saving to Spotify:', error);
-            alert('Error saving playlist to Spotify.');
+            const errorMessage = error.response?.data?.error?.message || error.message || 'Unknown error';
+            showModal('Save Error', `Error saving playlist to Spotify: ${errorMessage}`, 'error');
         }
     };
 
@@ -245,60 +252,34 @@ export default function HistoryPage() {
                 </div>
             )}
 
-            {/* Clear All Modal */}
-            {showClearModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-                    <div className="bg-background-elevated-base rounded-lg p-4 sm:p-6 max-w-md w-full border border-background-elevated-highlight">
-                        <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">Clear All History</h2>
-                        <p className="text-text-subdued mb-4 sm:mb-6 text-sm sm:text-base">
-                            Are you sure you want to clear all playlist history? This action cannot be undone.
-                        </p>
-                        <div className="flex gap-2 sm:gap-3 justify-end">
-                            <button
-                                onClick={() => setShowClearModal(false)}
-                                className="px-3 sm:px-4 py-2 text-sm sm:text-base rounded-full bg-background-elevated-highlight hover:bg-background-elevated-press transition-colors duration-200 font-medium"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={confirmClearAll}
-                                className="px-3 sm:px-4 py-2 text-sm sm:text-base rounded-full bg-essential-negative text-white hover:opacity-90 transition-opacity duration-200 font-medium"
-                            >
-                                Clear All
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <ConfirmModal
+                isOpen={showClearConfirm}
+                onClose={() => setShowClearConfirm(false)}
+                onConfirm={confirmClearAll}
+                title="Clear All History"
+                message="Are you sure you want to clear all playlist history? This action cannot be undone."
+                confirmText="Clear All"
+            />
 
-            {/* Remove Playlist Modal */}
-            {showRemoveModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-                    <div className="bg-background-elevated-base rounded-lg p-4 sm:p-6 max-w-md w-full border border-background-elevated-highlight">
-                        <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">Remove Playlist</h2>
-                        <p className="text-text-subdued mb-4 sm:mb-6 text-sm sm:text-base">
-                            Are you sure you want to remove this playlist from history?
-                        </p>
-                        <div className="flex gap-2 sm:gap-3 justify-end">
-                            <button
-                                onClick={() => {
-                                    setShowRemoveModal(false);
-                                    setPlaylistToRemove(null);
-                                }}
-                                className="px-3 sm:px-4 py-2 text-sm sm:text-base rounded-full bg-background-elevated-highlight hover:bg-background-elevated-press transition-colors duration-200 font-medium"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={confirmRemove}
-                                className="px-3 sm:px-4 py-2 text-sm sm:text-base rounded-full bg-essential-negative text-white hover:opacity-90 transition-opacity duration-200 font-medium"
-                            >
-                                Remove
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <ConfirmModal
+                isOpen={showRemoveConfirm}
+                onClose={() => {
+                    setShowRemoveConfirm(false);
+                    setPlaylistToRemove(null);
+                }}
+                onConfirm={confirmRemove}
+                title="Remove Playlist"
+                message="Are you sure you want to remove this playlist from history?"
+                confirmText="Remove"
+            />
+
+            <Modal 
+                isOpen={modal.isOpen}
+                onClose={closeModal}
+                title={modal.title}
+                message={modal.message}
+                type={modal.type}
+            />
         </div>
     );
 }

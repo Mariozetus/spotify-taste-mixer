@@ -20,8 +20,8 @@ export default function Home() {
       
       {/* Content */}
       <div className='relative z-10 text-center w-full sm:w-2/3 mx-auto flex flex-col items-center justify-center gap-4'>
-        <h1 className='text-4xl sm:text-6xl font-bold'>Spotify Taste Mixer</h1>
-        <p className='sm:text-base text-sm font-medium text-pretty lg:w-2/4 md:w-2/3 sm:w-auto'>
+        <h1 className='text-4xl sm:text-6xl font-bold'>Spotify MixWave</h1>
+        <p className='sm:text-sm text-xs font-medium text-pretty lg:w-2/4 md:w-2/3 sm:w-auto'>
           Aplicación web que genera playlists personalizadas de Spotify basándose en las preferencias musicales del usuario mediante widgets configurables.
         </p>
       </div>

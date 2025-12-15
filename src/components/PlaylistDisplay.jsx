@@ -240,8 +240,8 @@ export default function PlaylistDisplay({ playlist, onRemoveTrack, onRefresh, on
 
     return (
         <div className="border border-background-elevated-highlight rounded-lg p-3 sm:p-4">
-            {/* Header */}
-            <div className="flex flex-col items-start mb-3 sm:mb-4 gap-3">
+            <div className="flex flex-col items-start  gap-3">
+                {/* Header */}
                 <div className="w-full">
                     <h3 className="text-lg sm:text-xl font-bold">Your Mixed Playlist</h3>
                     <p className="text-xs sm:text-sm text-text-subdued">{playlist.length} tracks</p>
@@ -289,7 +289,7 @@ export default function PlaylistDisplay({ playlist, onRemoveTrack, onRefresh, on
                         items={playlist.map(track => track.id)}
                         strategy={verticalListSortingStrategy}
                     >
-                        <div className="space-y-1 sm:space-y-2 max-h-[400px] sm:max-h-[600px] overflow-y-auto pr-1 sm:pr-2 w-full">
+                        <div className="space-y-1 sm:space-y-2 max-h-[400px] lg:max-h-[calc(100vh-487px)] overflow-y-auto pr-1 sm:pr-2 w-full">
                             {playlist.map((track, index) => (
                                 <SortableTrack
                                     key={track.id}

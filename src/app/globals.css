@@ -15,7 +15,9 @@
   --color-background-tinted-base: #0000000d;
   --color-background-tinted-highlight: #00000014;
   --color-background-tinted-press: #0000001f;
+  --color-background-inverse: #121212;
   --color-text-base: #000000;
+  --color-text-inverse: #fff;
   --color-text-subdued: #6a6a6a;
   --color-text-negative: #d41b2c;
   --color-text-warning: #ff8800;
@@ -43,7 +45,9 @@
   --color-background-tinted-base: #ffffff1a;
   --color-background-tinted-highlight: #ffffff24;
   --color-background-tinted-press: #ffffff36;
+  --color-background-inverse: #fff;
   --color-text-base: #fff;
+  --color-text-inverse: #000000;
   --color-text-subdued: #b3b3b3;
   --color-text-negative: #f3727f;
   --color-text-warning: #ffa42b;
@@ -73,7 +77,9 @@
   --color-background-tinted-base: var(--color-background-tinted-base);
   --color-background-tinted-highlight: var(--color-background-tinted-highlight);
   --color-background-tinted-press: var(--color-background-tinted-press);
+  --color-background-inverse: var(--color-background-inverse);
   --color-text-base: var(--color-text-base);
+  --color-text-inverse : var(--color-text-inverse);
   --color-text-subdued: var(--color-text-subdued);
   --color-text-negative: var(--color-text-negative);
   --color-text-warning: var(--color-text-warning);

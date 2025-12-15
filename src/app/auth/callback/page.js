@@ -77,7 +77,7 @@ function CallbackContent() {
         return (
             <div className="flex items-center justify-center min-h-screen">
                 <div className="text-center">
-                    <h1 className="text-4xl text-text-negative font-bold bg-bac mb-4">Error</h1>
+                    <h1 className="text-4xl text-text-negative font-bold mb-4">Error</h1>
                     <p className="font-medium text-base text-text-subdued mb-6">{error}</p>
                     <button
                         onClick={() => router.push('/')}

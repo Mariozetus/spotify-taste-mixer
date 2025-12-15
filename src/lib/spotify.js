@@ -182,7 +182,6 @@ export async function generatePlaylist(preferences, numSongs = 50, includeFavori
                 }
             }
             
-            
             // Si necesitamos más canciones, añadimos mas en un loop, no lo hacemos
             // de una por el limite de la API de spoty
             while (allTracks.length < targetTracks) {
@@ -217,12 +216,13 @@ export async function generatePlaylist(preferences, numSongs = 50, includeFavori
             const targetTracks = numSongs * 3;
             const tracksNeeded = targetTracks - allTracks.length;
             
-            // Calcular cuántas búsquedas necesitamos (50 tracks por búsqueda)
-            const numQueries = Math.ceil(tracksNeeded / 50);
+            const tracksPerQuerie = 30;
+            // Calcular cuántas búsquedas necesitamos (30 tracks por búsqueda)
+            const numQueries = Math.ceil(tracksNeeded / tracksPerQuerie);
             
             const randomQueries = [];
             const minYear = 1950;
-            const maxYear = new Date.getFullYear();
+            const maxYear = (new Date()).getFullYear();
 
             // Crear queries con rangos de epocas totalmente aleatorios (entre 1960 y 2025)
             for (let i = 0; i < numQueries; i++) {
@@ -231,7 +231,7 @@ export async function generatePlaylist(preferences, numSongs = 50, includeFavori
 
                 randomQueries.push({
                     query: `year:${start}-${end}`,
-                    limit: 50,
+                    limit: tracksPerQuerie,
                     offset: Math.floor(Math.random() * 500),
                 });
             }
@@ -359,7 +359,7 @@ export async function savePlaylistToSpotify(tracks, playlistName = 'My Taste Mix
         );
         const playlistId = playlistResponse.data.id;
 
-        // 3Añadimos las canciones a la playlist
+        // Añadimos las canciones a la playlist
         const trackUris = tracks.map(track => `spotify:track:${track.id}`);
         await addTracksToPlaylist(playlistId, trackUris);
 
