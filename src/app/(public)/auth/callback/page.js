@@ -60,7 +60,7 @@ function CallbackContent() {
                 // Guardar tokens
                 saveTokens(data.access_token, data.refresh_token, data.expires_in);
 
-                // Redirigir al dashboard con recarga completa
+                // Redirigir al dashboard con recarga completa para sincronizar cookies
                 window.location.href = '/dashboard';
 
             } 

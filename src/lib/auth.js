@@ -45,13 +45,20 @@ export function getSpotifyAuthUrl(forceReauth = false) {
     return `https://accounts.spotify.com/authorize?${params.toString()}`;
 }
 
-// Guardar tokens en localStorage
+// Guardar tokens en localStorage y cookies
 export function saveTokens(accessToken, refreshToken, expiresIn) {
     if (typeof window === 'undefined') return;
     const expirationTime = Date.now() + expiresIn * 1000;
+    
+    // Guardar en localStorage
     localStorageUtils.setRaw('spotify_token', accessToken);
     localStorageUtils.setRaw('spotify_refresh_token', refreshToken);
     localStorageUtils.setRaw('spotify_token_expiration', expirationTime.toString());
+    
+    // También guardar en cookies para el middleware
+    const maxAge = expiresIn; // en segundos
+    document.cookie = `spotify_access_token=${accessToken}; path=/; max-age=${maxAge}; samesite=lax`;
+    document.cookie = `spotify_refresh_token=${refreshToken}; path=/; max-age=${60 * 60 * 24 * 30}; samesite=lax`; // 30 días
 }
 
 // Obtener token actual (con verificación de expiración)
@@ -112,10 +119,14 @@ export async function refreshAccessToken() {
 
         const data = await response.json();
         
-        // Guardar el nuevo token
+        // Guardar el nuevo token en localStorage y cookies
         const expirationTime = Date.now() + data.expires_in * 1000;
         localStorageUtils.setRaw('spotify_token', data.access_token);
         localStorageUtils.setRaw('spotify_token_expiration', expirationTime.toString());
+        
+        // Actualizar cookie del access token
+        const maxAge = data.expires_in;
+        document.cookie = `spotify_access_token=${data.access_token}; path=/; max-age=${maxAge}; samesite=lax`;
         
         return data.access_token;
     } catch (error) {

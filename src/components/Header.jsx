@@ -48,7 +48,7 @@ export function Header(){
 
     const handleLogout = () => {
         logout();
-        // Forzar recarga completa para limpiar todo el estado
+        // Forzar recarga completa para sincronizar cookies y limpiar estado
         window.location.href = '/';
     };
 
@@ -58,6 +58,7 @@ export function Header(){
         if (forceReauth) {
             sessionStorage.removeItem('force_reauth');
         }
+        // window.location.href necesario para OAuth redirect externo
         window.location.href = getSpotifyAuthUrl(forceReauth);
     }
 
