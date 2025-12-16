@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { SearchRounded as SearchIcon } from "../icons/SearchIcon";
 import TrackCard from "../TrackCard";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useDebounce } from "@/hooks/useDebounce";
 
 
 export default function TrackWidget({ onSelect, selectedItems, artists, onReset }){
@@ -14,6 +15,7 @@ export default function TrackWidget({ onSelect, selectedItems, artists, onReset 
     const [isLoading, setIsLoading] = useState(false);
     const [topTracks, setTopTracks] = useState([]);
     const {isFavorite, toggleFavorite} = useFavorites();
+    const debouncedSearchTerm = useDebounce(searchTerm, 500);
     
     useEffect(() => {
         // Cargar top tracks al inicio
@@ -53,30 +55,33 @@ export default function TrackWidget({ onSelect, selectedItems, artists, onReset 
     }, []);
 
     useEffect(() => {
-        if (!searchTerm) {
+        if (!debouncedSearchTerm) {
             setTracks(topTracks);
             setIsLoading(false);
             return;
         }
 
-        setIsLoading(true);
-        const timer = setTimeout(async () => { 
-            const response = await searchTracks(searchTerm);
-            
-            const data = response.data.tracks.items;
-            
-            if (filterByArtists) {
-                const filtered = filterTracksByArtists(data, artists);
-                setTracks(filtered);
-            } else {
-                setTracks(data);
+        const searchTracksAsync = async () => {
+            setIsLoading(true);
+            try {
+                const response = await searchTracks(debouncedSearchTerm);
+                const data = response.data.tracks.items;
+                
+                if (filterByArtists) {
+                    const filtered = filterTracksByArtists(data, artists);
+                    setTracks(filtered);
+                } else {
+                    setTracks(data);
+                }
+            } catch (error) {
+                console.error('Error searching tracks:', error);
+            } finally {
+                setIsLoading(false);
             }
-            console.log(tracks)
-            setIsLoading(false);
-        }, 500);
+        };
 
-        return () => clearTimeout(timer);
-    }, [searchTerm, filterByArtists, artists, topTracks]);
+        searchTracksAsync();
+    }, [debouncedSearchTerm, filterByArtists, artists, topTracks]);
 
     const filterTracksByArtists = (tracks, artists) => {
         

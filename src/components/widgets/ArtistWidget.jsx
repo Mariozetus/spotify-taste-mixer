@@ -1,6 +1,7 @@
 import { searchArtists, getTopArtists } from "@/lib/spotify"
 import { useState, useEffect } from "react"
 import { SearchRounded as SearchIcon } from "../icons/SearchIcon";
+import { useDebounce } from "@/hooks/useDebounce";
 
 
 export default function ArtistWidget({ onSelect, selectedItems, onReset }){
@@ -9,6 +10,7 @@ export default function ArtistWidget({ onSelect, selectedItems, onReset }){
     const [searchTerm, setSearchTerm] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [topArtists, setTopArtists] = useState([]);
+    const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
     useEffect(() => {
         const loadTopArtists = async () => {
@@ -45,21 +47,26 @@ export default function ArtistWidget({ onSelect, selectedItems, onReset }){
     }, []);
 
     useEffect(() => {
-        if (!searchTerm) {
+        if (!debouncedSearchTerm) {
             setArtists(topArtists);
             setIsLoading(false);
             return;
         }
 
-        setIsLoading(true);
-        const timer = setTimeout(async () => {
-            const response = await searchArtists(searchTerm);
-            setArtists(response.data.artists.items);
-            setIsLoading(false);
-        }, 500);
+        const searchArtistsAsync = async () => {
+            setIsLoading(true);
+            try {
+                const response = await searchArtists(debouncedSearchTerm);
+                setArtists(response.data.artists.items);
+            } catch (error) {
+                console.error('Error searching artists:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
 
-        return () => clearTimeout(timer);
-    }, [searchTerm, topArtists]);
+        searchArtistsAsync();
+    }, [debouncedSearchTerm, topArtists]);
 
     return(
         <div className="border border-background-elevated-highlight rounded-lg p-3 sm:p-4">
