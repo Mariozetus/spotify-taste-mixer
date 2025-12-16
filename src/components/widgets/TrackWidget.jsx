@@ -1,6 +1,9 @@
+
 import { searchTracks, getTopTracks } from "@/lib/spotify"
 import { useState, useEffect } from "react"
 import { SearchRounded as SearchIcon } from "../icons/SearchIcon";
+import TrackCard from "../TrackCard";
+import { useFavorites } from "@/hooks/useFavorites";
 
 
 export default function TrackWidget({ onSelect, selectedItems, artists, onReset }){
@@ -10,7 +13,8 @@ export default function TrackWidget({ onSelect, selectedItems, artists, onReset 
     const [searchTerm, setSearchTerm] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [topTracks, setTopTracks] = useState([]);
-
+    const {isFavorite, toggleFavorite} = useFavorites();
+    
     useEffect(() => {
         // Cargar top tracks al inicio
         const loadTopTracks = async () => {
@@ -159,48 +163,15 @@ export default function TrackWidget({ onSelect, selectedItems, artists, onReset 
                     {
                         tracks.map(track => {
                             const isSelected = Array.isArray(selectedItems) && selectedItems.some(item => item?.id === track?.id);
-                            return(
-                                <button 
+                            return (
+                                <TrackCard 
                                     key={track?.id}
-                                    onClick={() => onSelect(track)}
-                                    className={`flex group items-center rounded-lg px-2 sm:px-4 gap-2 sm:gap-4 py-2 h-16 sm:h-20 text-nowrap hover:text-text-base ${isSelected ? 'bg-background-tinted-press' : 'hover:bg-background-tinted-highlight'} transition-colors duration-200 cursor-pointer`}>
-                                    <img 
-                                        className="h-12 sm:h-full aspect-square rounded-md bg-background-highlight"
-                                        src={track?.album?.images?.[0]?.url || "default-user.svg"}
-                                    />
-                                    <div className="flex flex-col justify-start items-start min-w-0 flex-1 gap-1">
-                                        <div className="flex items-center gap-2 max-w-full">
-                                            <span className="font-semibold text-xs sm:text-base truncate text-left" title={track?.name}>
-                                                {track?.name}
-                                            </span>
-                                            {track?.explicit && (
-                                                <span className="px-1 py-0.5 text-xs bg-text-subdued text-background-base rounded shrink-0">
-                                                    E
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div className="truncate max-w-full text-xs" title={track?.artists.map(a => a.name).join(', ')}>
-                                        {
-                                            track?.artists.map((artist, idx) => {
-                                                const isLast = idx === track.artists.length - 1;
-                                                return (
-                                                    <span className={`font-normal text-xs text-left group-hover:text-text-base ${isSelected ? 'text-text-base' : 'text-text-subdued'}`} key={artist?.id}>
-                                                        {artist?.name}{!isLast && ', '}
-                                                    </span>
-                                                );
-                                            })
-                                        }
-                                        </div>
-                                    </div>
-                                    <span className="hidden xl:block font-normal text-xs sm:text-sm ml-auto text-text-subdued shrink-0">{millisecondsToTime(track?.duration_ms)}</span>
-                                    <a className="hover:scale-110 size-3 sm:size-4 transition-all duration-200 shrink-0" href={track?.external_urls?.spotify}
-                                        target="_blank" rel="noopener noreferrer"> 
-                                        <svg className="fill-text-base" width="16" height="16" viewBox="0 0 16 16">
-                                            <path d="M1 2.75A.75.75 0 0 1 1.75 2H7v1.5H2.5v11h10.219V9h1.5v6.25a.75.75 0 0 1-.75.75H1.75a.75.75 0 0 1-.75-.75z"></path>
-                                            <path d="M15 1v4.993a.75.75 0 1 1-1.5 0V3.56L8.78 8.28a.75.75 0 0 1-1.06-1.06l4.72-4.72h-2.433a.75.75 0 0 1 0-1.5z"></path>
-                                        </svg>
-                                    </a>
-                                </button>
+                                    track={track}
+                                    isSelected={isSelected}
+                                    onClick={onSelect}
+                                    isFavorite={isFavorite}
+                                    onToggleFavorite={toggleFavorite}
+                                />
                             );
                         })
                     }

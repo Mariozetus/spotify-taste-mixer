@@ -16,12 +16,12 @@ export default function DecadeWidget({ onSelect, selectedItems }) {
     return (
         <div className="border border-background-elevated-highlight rounded-lg p-3 sm:p-4">
             <h3 className="text-base sm:text-lg font-bold mb-3 sm:mb-4">Select Decades</h3>
-            <div className="flex flex-nowrap gap-2 overflow-x-auto pb-2">
+            <div className="flex flex-nowrap gap-2 overflow-x-auto pb-4 md:pb-2 lg:pb-0">
                 {decades.map((decade) => (
                     <button
                         key={decade}
                         onClick={() => handleToggle(decade)}
-                        className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-colors duration-200 whitespace-nowrap shrink-0 ${
+                        className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-colors duration-200 whitespace-nowrap cursor-pointer shrink-0 ${
                             Array.isArray(selectedItems) && selectedItems.includes(decade)
                                 ? 'bg-essential-bright-accent text-background-base'
                                 : 'bg-background-elevated-base hover:bg-background-elevated-highlight'

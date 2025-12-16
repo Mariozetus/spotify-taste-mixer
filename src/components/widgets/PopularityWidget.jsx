@@ -78,14 +78,14 @@ export default function PopularityWidget({ onSelect, selectedItems }) {
         <div className="border border-background-elevated-highlight rounded-lg p-3 sm:p-4">
             <h3 className="text-base sm:text-lg font-bold mb-4 sm:mb-6">Select Popularity</h3>
             
-            {/* Categorías predefinidas */}
+            {/* ========================= CATEGORIES ========================= */}
             <div className="mb-4 sm:mb-6 space-y-2">
                 <p className="text-xs sm:text-sm text-text-subdued mb-2">Quick Select:</p>
                 {categories.map((category) => (
                     <button
                         key={category.name}
                         onClick={() => handleCategorySelect(category.name)}
-                        className={`w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-sm sm:text-base font-medium transition-colors duration-200 text-left ${
+                        className={`w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-sm sm:text-base font-medium transition-colors duration-200 cursor-pointer text-left ${
                             selectedCategory === category.name
                                 ? 'bg-essential-bright-accent text-background-base'
                                 : 'bg-background-elevated-base hover:bg-background-elevated-highlight'
@@ -112,7 +112,7 @@ export default function PopularityWidget({ onSelect, selectedItems }) {
                 ))}
             </div>
 
-            {/* Rango personalizado */}
+            {/* ========================= CUSTOM RANGE ========================= */}
             <div className="space-y-3 sm:space-y-4 pt-3 sm:pt-4 border-t border-background-elevated-highlight">
                 <p className="text-xs sm:text-sm text-text-subdued mb-3 sm:mb-4">Custom Range:</p>
                 

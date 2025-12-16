@@ -7,12 +7,17 @@ import { getUserSavedTracks } from '@/lib/spotify';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useModal } from '@/hooks/useModal';
+import { useFavorites } from '@/hooks/useFavorites';
 import Modal from '@/components/Modal';
 import ConfirmModal from '@/components/ConfirmModal';
 
 function SpotifyLikedSongs() {
     const [likedSongs, setLikedSongs] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
+    const [offset, setOffset] = useState(0);
+    const ITEMS_PER_PAGE = 50;
 
     useEffect(() => {
         loadLikedSongs();
@@ -20,18 +25,40 @@ function SpotifyLikedSongs() {
 
     const { modal: modalSpotify, showModal: showModalSpotify, closeModal: closeModalSpotify } = useModal();
     
-    const loadLikedSongs = async () => {
-        setIsLoading(true);
+    const loadLikedSongs = async (isLoadMore = false) => {
+        if (isLoadMore) {
+            setIsLoadingMore(true);
+        } else {
+            setIsLoading(true);
+        }
+        
         try {
-            // Obtener todas las canciones favoritas (sin límite específico, por defecto 50)
-            // Para obtener TODAS, usar un número grande como 9999
-            const response = await getUserSavedTracks(9999);
-            setLikedSongs(response.data.items);
+            const currentOffset = isLoadMore ? offset : 0;
+            const response = await getUserSavedTracks(ITEMS_PER_PAGE, currentOffset);
+            const newItems = response.data.items;
+            
+            if (isLoadMore) {
+                setLikedSongs(prev => [...prev, ...newItems]);
+            } else {
+                setLikedSongs(newItems);
+            }
+            
+            // Actualizar offset y verificar si hay más canciones
+            setOffset(currentOffset + ITEMS_PER_PAGE);
+            setHasMore(newItems.length === ITEMS_PER_PAGE);
+            
         } catch (error) {
             console.error('Error loading liked songs:', error);
             showModalSpotify('Error', 'Failed to load liked songs from Spotify.', 'error');
         } finally {
             setIsLoading(false);
+            setIsLoadingMore(false);
+        }
+    };
+    
+    const handleLoadMore = () => {
+        if (!isLoadingMore && hasMore) {
+            loadLikedSongs(true);
         }
     };
 
@@ -125,6 +152,42 @@ function SpotifyLikedSongs() {
                         </div>
                     );
                 })}
+                
+                {/* ========================= LOADING MORE ========================= */}
+                {isLoadingMore && (
+                    <div className="space-y-2">
+                        {Array.from({ length: 5 }).map((_, idx) => (
+                            <div key={`loading-${idx}`} className="flex items-center gap-3 p-3 rounded-lg animate-pulse">
+                                <div className="w-6 h-4 bg-background-elevated-highlight rounded"></div>
+                                <div className="w-12 h-12 bg-background-elevated-highlight rounded-md"></div>
+                                <div className="flex-1 min-w-0 space-y-2">
+                                    <div className="h-4 bg-background-elevated-highlight rounded w-3/4"></div>
+                                    <div className="h-3 bg-background-elevated-highlight rounded w-1/2"></div>
+                                </div>
+                                <div className="h-3 bg-background-elevated-highlight rounded w-12"></div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+                
+                {/* ========================= LOAD MORE BUTTON ========================= */}
+                {hasMore && !isLoadingMore && likedSongs.length > 0 && (
+                    <div className="flex justify-center pt-4">
+                        <button
+                            onClick={handleLoadMore}
+                            className="px-6 py-3 rounded-full bg-background-elevated-base hover:bg-background-elevated-highlight transition-colors duration-200 font-medium"
+                        >
+                            Load More
+                        </button>
+                    </div>
+                )}
+
+                {/* ========================= NO MORE SONGS ========================= */}
+                {!hasMore && likedSongs.length > 0 && (
+                    <div className="text-center pt-4 text-text-subdued text-sm">
+                        You've reached the end • {likedSongs.length} songs total
+                    </div>
+                )}
             </div>
             
             <Modal 
@@ -142,9 +205,8 @@ export default function FavoritesPage() {
     const router = useRouter();
     const { isAuthenticated, isLoading } = useAuth();
     const { modal, showModal, closeModal } = useModal();
-    const [favorites, setFavorites] = useState([]);
+    const { favorites, removeFavorite: removeFav, clearAllFavorites: clearAll, isClient } = useFavorites();
     const [spotifyFavorites, setSpotifyFavorites] = useState([]);
-    const [isClient, setIsClient] = useState(false);
     const [activeTab, setActiveTab] = useState('local'); // 'local' | 'spotify'
     const [showClearConfirm, setShowClearConfirm] = useState(false);
     const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
@@ -156,11 +218,6 @@ export default function FavoritesPage() {
             router.push('/');
             return;
         }
-        setIsClient(true);
-        if (typeof window !== 'undefined') {
-            const localFavorites = JSON.parse(localStorage.getItem('favorite_tracks') || '[]');
-            setFavorites(localFavorites);
-        }
     }, [isLoading, isAuthenticated, router]);
 
     const millisecondsToTime = (ms) => {
@@ -169,31 +226,26 @@ export default function FavoritesPage() {
         return `${minutes}:${seconds.padStart(2, '0')}`;
     };
 
-    const removeFavorite = (trackId) => {
-        if (typeof window === 'undefined') return;
+    const handleRemoveFavorite = (trackId) => {
         setTrackToRemove(trackId);
         setShowRemoveConfirm(true);
     };
 
     const confirmRemove = () => {
         if (trackToRemove) {
-            const updatedFavorites = favorites.filter(f => f.id !== trackToRemove);
-            setFavorites(updatedFavorites);
-            localStorage.setItem('favorite_tracks', JSON.stringify(updatedFavorites));
+            removeFav(trackToRemove);
             showModal('Success', 'Track removed from favorites!', 'success');
         }
         setShowRemoveConfirm(false);
         setTrackToRemove(null);
     };
 
-    const clearAllFavorites = () => {
-        if (typeof window === 'undefined') return;
+    const handleClearAllFavorites = () => {
         setShowClearConfirm(true);
     };
 
     const confirmClearAll = () => {
-        setFavorites([]);
-        localStorage.setItem('favorite_tracks', JSON.stringify([]));
+        clearAll();
         setShowClearConfirm(false);
         showModal('Success', 'All favorites cleared successfully!', 'success');
     };
@@ -210,7 +262,7 @@ export default function FavoritesPage() {
 
     return (
         <div className="h-[calc(100vh-4rem)] p-6 flex flex-col gap-6 overflow-y-auto">
-            {/* Header */}
+            {/* ========================= HEADER ========================= */}
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold flex items-center gap-3">
@@ -225,7 +277,7 @@ export default function FavoritesPage() {
                 </div>
                 {activeTab === 'local' && favorites.length > 0 && (
                     <button
-                        onClick={clearAllFavorites}
+                        onClick={handleClearAllFavorites}
                         className="px-4 py-2 rounded-full bg-essential-negative text-white hover:opacity-90 transition-opacity duration-200 font-normal"
                     >
                         Clear All
@@ -233,11 +285,11 @@ export default function FavoritesPage() {
                 )}
             </div>
 
-            {/* Tabs */}
+            {/* ========================= TABS ========================= */}
             <div className="flex gap-2 border-b border-background-elevated-highlight">
                 <button
                     onClick={() => setActiveTab('local')}
-                    className={`px-6 py-3 font-medium transition-colors duration-200 border-b-2 ${
+                    className={`px-6 py-3 font-medium transition-colors duration-200 border-b-2 cursor-pointer ${
                         activeTab === 'local'
                             ? 'border-essential-bright-accent text-essential-bright-accent'
                             : 'border-transparent text-text-subdued hover:text-text-base'
@@ -247,7 +299,7 @@ export default function FavoritesPage() {
                 </button>
                 <button
                     onClick={() => setActiveTab('spotify')}
-                    className={`px-6 py-3 font-medium transition-colors duration-200 border-b-2 ${
+                    className={`px-6 py-3 font-medium transition-colors duration-200 border-b-2 cursor-pointer ${
                         activeTab === 'spotify'
                             ? 'border-essential-bright-accent text-essential-bright-accent'
                             : 'border-transparent text-text-subdued hover:text-text-base'
@@ -257,7 +309,7 @@ export default function FavoritesPage() {
                 </button>
             </div>
 
-            {/* Content */}
+            {/* ========================= CONTENT ========================= */}
             {activeTab === 'local' && (
                 <>
                     {favorites.length === 0 ? (
@@ -278,19 +330,16 @@ export default function FavoritesPage() {
                                         key={track.id}
                                         className="flex items-center gap-3 p-3 rounded-lg bg-background-elevated-base hover:bg-background-elevated-highlight transition-colors duration-200 group"
                                     >
-                                        {/* Track Number */}
                                         <div className="w-6 text-center text-text-subdued text-sm">
                                             {index + 1}
                                         </div>
 
-                                        {/* Album Cover */}
                                         <img
                                             src={track.album?.images?.[0]?.url || '/placeholder-album.png'}
                                             alt={track.album?.name}
                                             className="w-12 h-12 rounded-md"
                                         />
 
-                                        {/* Track Info */}
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2">
                                                 <p className="font-medium truncate" title={track.name}>
@@ -307,12 +356,10 @@ export default function FavoritesPage() {
                                             </p>
                                         </div>
 
-                                        {/* Duration */}
                                         <div className="text-sm text-text-subdued">
                                             {millisecondsToTime(track.duration_ms)}
                                         </div>
 
-                                        {/* Actions */}
                                         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                                             <a
                                                 href={track.external_urls?.spotify}
@@ -325,7 +372,7 @@ export default function FavoritesPage() {
                                             </a>
 
                                             <button
-                                                onClick={() => removeFavorite(track.id)}
+                                                onClick={() => handleRemoveFavorite(track.id)}
                                                 className="p-2 hover:bg-background-elevated-press rounded-full transition-colors duration-200"
                                                 title="Remove from favorites"
                                             >

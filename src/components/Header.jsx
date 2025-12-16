@@ -5,6 +5,8 @@ import { FaArrowUpRightFromSquare as RedirectIcon} from "react-icons/fa6";
 import { MdOutlineWorkspacePremium as PremiumBadge } from "react-icons/md";
 import { useAuth } from "@/hooks/useAuth";
 import { useSpotifyUser } from "@/hooks/useSpotifyUser";
+import { useClickOutside } from "@/hooks/useClickOutside";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useRouter, usePathname } from "next/navigation";
 // Esta funcion redirigira al usuario a spotify para que nos de permisos y su token
 import { getSpotifyAuthUrl, logout } from "@/lib/auth"; 
@@ -17,25 +19,24 @@ export function Header(){
     const [ showUserMenu, setShowUserMenu ] = useState(false);
     const [ showMobileMenu, setShowMobileMenu ] = useState(false);
     const [ isClient, setIsClient ] = useState(false);
-    const [ theme, setTheme ] = useState('light');
+    const [ theme, setTheme ] = useLocalStorage('theme', null);
     const router = useRouter();
     const pathname = usePathname();
+    const dropdownRef = useClickOutside(() => setShowUserMenu(false));
 
     useEffect(() => {
         setIsClient(true);
         refreshAuth(); 
         refreshUser();
         
-        // Cargar tema guardado o detectar preferencia del sistema
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme) {
-            setTheme(savedTheme);
-            document.documentElement.classList.toggle('dark', savedTheme === 'dark');
-        } else {
+        // Detectar preferencia del sistema si no hay tema guardado
+        if (!theme && typeof window !== 'undefined') {
             const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             const initialTheme = prefersDark ? 'dark' : 'light';
             setTheme(initialTheme);
             document.documentElement.classList.toggle('dark', prefersDark);
+        } else if (theme) {
+            document.documentElement.classList.toggle('dark', theme === 'dark');
         }
     },[])
 
@@ -43,64 +44,77 @@ export function Header(){
         const newTheme = theme === 'light' ? 'dark' : 'light';
         setTheme(newTheme);
         document.documentElement.classList.toggle('dark', newTheme === 'dark');
-        localStorage.setItem('theme', newTheme);
     };
 
     const handleLogout = () => {
         logout();
-        refreshAuth();
-        refreshUser();
-        router.push("/");
+        // Forzar recarga completa para limpiar todo el estado
+        window.location.href = '/';
     };
 
     const handleLogin = () => {
-        window.location.href = getSpotifyAuthUrl();
-        refreshAuth();
-        refreshUser();
+        // Verificar si necesitamos forzar reautenticación
+        const forceReauth = sessionStorage.getItem('force_reauth') === 'true';
+        if (forceReauth) {
+            sessionStorage.removeItem('force_reauth');
+        }
+        window.location.href = getSpotifyAuthUrl(forceReauth);
     }
 
 
 
     return(
-        <header className="flex border-b border-background-inverse/20 items-center justify-start bg-background-base w-screen h-header py-2 px-4 sm:px-6 gap-4 sm:gap-8 lg:gap-16 z-20">
+        <header className="flex border-b border-background-inverse/20 items-center justify-between bg-background-base w-screen h-header py-2 px-4 sm:px-6 gap-4 z-20">
             
-            {/* Logo Spotify */}
-            <Link href='/' className="h-full cursor-pointer flex items-center">
+            {/* ========================= MOVIL WITHOUT SESION ========================= */}
+            {isClient && !isAuthenticated && (
+                <div className="flex items-center gap-3 lg:hidden">
+                    <button 
+                        onClick={() => setShowMobileMenu(!showMobileMenu)}
+                        className="flex flex-col gap-1.5 p-2 cursor-pointer"
+                    >
+                        <span className={`block w-6 h-0.5 bg-background-inverse transition-all duration-300 ${showMobileMenu ? 'rotate-45 translate-y-2' : ''}`}></span>
+                        <span className={`block w-6 h-0.5 bg-background-inverse transition-all duration-300 ${showMobileMenu ? 'opacity-0' : ''}`}></span>
+                        <span className={`block w-6 h-0.5 bg-background-inverse transition-all duration-300 ${showMobileMenu ? '-rotate-45 -translate-y-2' : ''}`}></span>
+                    </button>
+                    <Link href='/' className="h-full cursor-pointer flex items-center">
+                        <svg height="28" className="fill-text-base" aria-hidden="false" aria-label="Spotify" data-encore-id="logoSpotify" role="img" viewBox="0 0 24 24"><title>Spotify</title><path d="M12.477.01C5.855-.253.274 4.902.011 11.524c-.263 6.623 4.892 12.204 11.515 12.466 6.622.263 12.203-4.892 12.466-11.514S19.099.272 12.477.01m5.066 17.579a.717.717 0 0 1-.977.268 14.4 14.4 0 0 0-5.138-1.747 14.4 14.4 0 0 0-5.42.263.717.717 0 0 1-.338-1.392 15.8 15.8 0 0 1 5.958-.29c2.003.282 3.903.928 5.647 1.92a.717.717 0 0 1 .268.978m1.577-3.15a.93.93 0 0 1-1.262.376 17.7 17.7 0 0 0-5.972-1.96 17.7 17.7 0 0 0-6.281.238.93.93 0 0 1-1.11-.71.93.93 0 0 1 .71-1.11 19.5 19.5 0 0 1 6.94-.262 19.5 19.5 0 0 1 6.599 2.165c.452.245.62.81.376 1.263m1.748-3.551a1.147 1.147 0 0 1-1.546.488 21.4 21.4 0 0 0-6.918-2.208 21.4 21.4 0 0 0-7.259.215 1.146 1.146 0 0 1-.456-2.246 23.7 23.7 0 0 1 8.034-.24 23.7 23.7 0 0 1 7.657 2.445c.561.292.78.984.488 1.546"/></svg>
+                    </Link>
+                </div>
+            )}
+
+            {/* ========================= MOVIL WITH SESION ========================= */}
+            {isClient && isAuthenticated && (
+                <Link href='/' className="lg:hidden h-full cursor-pointer flex items-center">
+                    <svg height="28" className="fill-text-base" aria-hidden="false" aria-label="Spotify" data-encore-id="logoSpotify" role="img" viewBox="0 0 24 24"><title>Spotify</title><path d="M12.477.01C5.855-.253.274 4.902.011 11.524c-.263 6.623 4.892 12.204 11.515 12.466 6.622.263 12.203-4.892 12.466-11.514S19.099.272 12.477.01m5.066 17.579a.717.717 0 0 1-.977.268 14.4 14.4 0 0 0-5.138-1.747 14.4 14.4 0 0 0-5.42.263.717.717 0 0 1-.338-1.392 15.8 15.8 0 0 1 5.958-.29c2.003.282 3.903.928 5.647 1.92a.717.717 0 0 1 .268.978m1.577-3.15a.93.93 0 0 1-1.262.376 17.7 17.7 0 0 0-5.972-1.96 17.7 17.7 0 0 0-6.281.238.93.93 0 0 1-1.11-.71.93.93 0 0 1 .71-1.11 19.5 19.5 0 0 1 6.94-.262 19.5 19.5 0 0 1 6.599 2.165c.452.245.62.81.376 1.263m1.748-3.551a1.147 1.147 0 0 1-1.546.488 21.4 21.4 0 0 0-6.918-2.208 21.4 21.4 0 0 0-7.259.215 1.146 1.146 0 0 1-.456-2.246 23.7 23.7 0 0 1 8.034-.24 23.7 23.7 0 0 1 7.657 2.445c.561.292.78.984.488 1.546"/></svg>
+                </Link>
+            )}
+            
+            {/* ========================= DESKTOP ========================= */}
+            <Link href='/' className="hidden lg:flex h-full cursor-pointer items-center">
                 <svg height="28" className="sm:h-8 fill-text-base" aria-hidden="false" aria-label="Spotify" data-encore-id="logoSpotify" role="img" viewBox="0 0 24 24"><title>Spotify</title><path d="M12.477.01C5.855-.253.274 4.902.011 11.524c-.263 6.623 4.892 12.204 11.515 12.466 6.622.263 12.203-4.892 12.466-11.514S19.099.272 12.477.01m5.066 17.579a.717.717 0 0 1-.977.268 14.4 14.4 0 0 0-5.138-1.747 14.4 14.4 0 0 0-5.42.263.717.717 0 0 1-.338-1.392 15.8 15.8 0 0 1 5.958-.29c2.003.282 3.903.928 5.647 1.92a.717.717 0 0 1 .268.978m1.577-3.15a.93.93 0 0 1-1.262.376 17.7 17.7 0 0 0-5.972-1.96 17.7 17.7 0 0 0-6.281.238.93.93 0 0 1-1.11-.71.93.93 0 0 1 .71-1.11 19.5 19.5 0 0 1 6.94-.262 19.5 19.5 0 0 1 6.599 2.165c.452.245.62.81.376 1.263m1.748-3.551a1.147 1.147 0 0 1-1.546.488 21.4 21.4 0 0 0-6.918-2.208 21.4 21.4 0 0 0-7.259.215 1.146 1.146 0 0 1-.456-2.246 23.7 23.7 0 0 1 8.034-.24 23.7 23.7 0 0 1 7.657 2.445c.561.292.78.984.488 1.546"/></svg>
             </Link>
             
-            {/* Desktop Menu */}
             <div className="hidden lg:flex font-extrabold text-xl" suppressHydrationWarning>
-                <Link href="/" className={`mr-16 transition-colors ${pathname === '/' ? 'text-text-base' : 'text-text-subdued hover:text-text-base'}`}>Home</Link>
+                <Link href="/" className={`mx-16 transition-colors ${pathname === '/' ? 'text-text-base' : 'text-text-subdued hover:text-text-base'}`}>Home</Link>
                 {isClient && isAuthenticated && <Link href="/dashboard" className={`mr-16 transition-colors ${pathname === '/dashboard' ? 'text-text-base' : 'text-text-subdued hover:text-text-base'}`}>Dashboard</Link>}
                 {isClient && isAuthenticated && <Link href="/favorites" className={`mr-16 transition-colors ${pathname === '/favorites' ? 'text-text-base' : 'text-text-subdued hover:text-text-base'}`}>Favorites</Link>}
-                {isClient && isAuthenticated && <Link href="/history" className={`transition-colors ${pathname === '/history' ? 'text-text-base' : 'text-text-subdued hover:text-text-base'}`}>History</Link>}
+                {isClient && isAuthenticated && <Link href="/history" className={`mr-16 transition-colors ${pathname === '/history' ? 'text-text-base' : 'text-text-subdued hover:text-text-base'}`}>History</Link>}
+                <Link href="/about" className={`transition-colors ${pathname === '/about' ? 'text-text-base' : 'text-text-subdued hover:text-text-base'}`}>About</Link>
             </div>
 
-            {/* Hamburger Button - Mobile/Tablet */}
-            {isClient && isAuthenticated && (
-                <button 
-                    onClick={() => setShowMobileMenu(!showMobileMenu)}
-                    className="lg:hidden flex flex-col gap-1.5 p-2 ml-auto"
-                >
-                    <span className={`block w-6 h-0.5 bg-background-inverse transition-all duration-300 ${showMobileMenu ? 'rotate-45 translate-y-2' : ''}`}></span>
-                    <span className={`block w-6 h-0.5 bg-background-inverse transition-all duration-300 ${showMobileMenu ? 'opacity-0' : ''}`}></span>
-                    <span className={`block w-6 h-0.5 bg-background-inverse transition-all duration-300 ${showMobileMenu ? '-rotate-45 -translate-y-2' : ''}`}></span>
-                </button>
-            )}
-
-            {/* Mobile Menu Overlay */}
-            {showMobileMenu && isClient && isAuthenticated && (
+            {/* ========================= MOVIL OVERLAY ========================= */}
+            {showMobileMenu && isClient && (
                 <div className="lg:hidden fixed inset-0 bg-background-base bg-opacity-95 z-40 flex flex-col items-start justify-start p-6">
                     <button 
                         onClick={() => setShowMobileMenu(false)}
-                        className="absolute top-6 right-6 text-3xl"
+                        className="absolute top-6 right-6 text-3xl cursor-pointer"
                     >
                         ✕
                     </button>
                     
-                    {/* User Profile Section */}
-                    <div className="flex items-center gap-4 mb-8 pb-6 border-b border-background-inverse/20 w-full">
+                    {isAuthenticated && (
+                        <div className="flex items-center gap-4 mb-8 pb-6 border-b border-background-inverse/20 w-full">
                         <img 
                             src={user?.images[0]?.url} 
                             className="w-16 h-16 rounded-full border-2 border-background-elevated-highlight"
@@ -123,20 +137,20 @@ export function Header(){
                                 </a>
                             </div>
                         </div>
-                    </div>
+                        </div>
+                    )}
 
-                    {/* Navigation */}
                     <nav className="flex flex-col items-start gap-6 text-2xl font-extrabold w-full mb-8">
-                        <Link href="/" onClick={() => setShowMobileMenu(false)} className={`transition-colors ${pathname === '/' ? 'text-text-base' : 'text-text-subdued hover:text-2xltext-base'}`}>Home</Link>
-                        <Link href="/dashboard" onClick={() => setShowMobileMenu(false)} className={`transition-colors ${pathname === '/dashboard' ? 'text-text-base' : 'text-text-subdued hover:text-2xltext-base'}`}>Dashboard</Link>
-                        <Link href="/favorites" onClick={() => setShowMobileMenu(false)} className={`transition-colors ${pathname === '/favorites' ? 'text-text-base' : 'text-text-subdued hover:text-2xltext-base'}`}>Favorites</Link>
-                        <Link href="/history" onClick={() => setShowMobileMenu(false)} className={`transition-colors ${pathname === '/history' ? 'text-text-base' : 'text-text-subdued hover:text-2xltext-base'}`}>History</Link>
+                        <Link href="/" onClick={() => setShowMobileMenu(false)} className={`transition-colors ${pathname === '/' ? 'text-text-base' : 'text-text-subdued hover:text-text-base'}`}>Home</Link>
+                        {isAuthenticated && <Link href="/dashboard" onClick={() => setShowMobileMenu(false)} className={`transition-colors ${pathname === '/dashboard' ? 'text-text-base' : 'text-text-subdued hover:text-text-base'}`}>Dashboard</Link>}
+                        {isAuthenticated && <Link href="/favorites" onClick={() => setShowMobileMenu(false)} className={`transition-colors ${pathname === '/favorites' ? 'text-text-base' : 'text-text-subdued hover:text-text-base'}`}>Favorites</Link>}
+                        {isAuthenticated && <Link href="/history" onClick={() => setShowMobileMenu(false)} className={`transition-colors ${pathname === '/history' ? 'text-text-base' : 'text-text-subdued hover:text-text-base'}`}>History</Link>}
+                        <Link href="/about" onClick={() => setShowMobileMenu(false)} className={`transition-colors ${pathname === '/about' ? 'text-text-base' : 'text-text-subdued hover:text-text-base'}`}>About</Link>
                     </nav>
 
-                    {/* Theme Toggle */}
                     <button
                         onClick={toggleTheme}
-                        className="w-full border border-text-base/10 py-3 px-6 rounded-full bg-background-elevated-base text-text-subdued hover:bg-background-elevated-highlight font-semibold transition-all mb-4 flex items-center justify-center gap-3"
+                        className="w-full border border-text-base/10 py-3 px-6 rounded-full bg-background-elevated-base text-text-subdued hover:bg-background-elevated-highlight font-semibold transition-all mb-4 flex items-center justify-center gap-3 cursor-pointer"
                     >
                         {theme === 'light' ? (
                             <>
@@ -151,39 +165,44 @@ export function Header(){
                         )}
                     </button>
 
-                    {/* Logout Button */}
-                    <button
-                        onClick={() => {
-                            handleLogout();
-                            setShowMobileMenu(false);
-                        }}
-                        className="w-full py-3 px-6 rounded-full border border-text-base/10 bg-background-elevated-base text-text-subdued hover:bg-background-elevated-highlight font-semibold transition-all"
-                    >
-                        Logout
-                    </button>
+                    {isAuthenticated && (
+                        <button
+                            onClick={() => {
+                                handleLogout();
+                                setShowMobileMenu(false);
+                            }}
+                            className="w-full py-3 px-6 rounded-full border border-text-base/10 bg-background-elevated-base text-text-subdued hover:bg-background-elevated-highlight font-semibold transition-all cursor-pointer"
+                        >
+                            Logout
+                        </button>
+                    )}
                 </div>
             )}
 
-            {/* Seccion Usuario - Desktop Only */}
+            {/* ========================= CON SESION ========================= */}
             {isClient && isAuthenticated ? (
-                <div className="hidden lg:block h-full relative ml-auto">
-                    {/* Imagen y nombre usuario */}
+                <>
+                    <div className="lg:hidden flex items-center gap-3">
+                        <button 
+                            onClick={() => setShowMobileMenu(!showMobileMenu)}
+                            className="flex flex-col gap-1.5 p-2 cursor-pointer"
+                        >
+                            <span className={`block w-6 h-0.5 bg-background-inverse transition-all duration-300 ${showMobileMenu ? 'rotate-45 translate-y-2' : ''}`}></span>
+                            <span className={`block w-6 h-0.5 bg-background-inverse transition-all duration-300 ${showMobileMenu ? 'opacity-0' : ''}`}></span>
+                            <span className={`block w-6 h-0.5 bg-background-inverse transition-all duration-300 ${showMobileMenu ? '-rotate-45 -translate-y-2' : ''}`}></span>
+                        </button>
+                    </div>
+
+                    <div ref={dropdownRef} className="hidden lg:block h-full relative ml-auto">
                     <button onClick={() => setShowUserMenu(!showUserMenu)} className="h-full flex items-center gap-2 sm:gap-4 ">
                         <span className="font-mono font-semibold text-sm md:text-base">{user?.display_name}</span>
                         <img src={user?.images[0]?.url} className="aspect-square h-full rounded-full border-2 border-background-elevated-highlight hover:scale-105 duration-300 cursor-pointer"></img>
                     </button>
 
-                    {/* Menu usuario */}
                     {showUserMenu && (
                         <div className="absolute right-0 w-full p-1 mt-1 divide-y divide-background-elevated-highlight origin-top-right rounded-md bg-background-elevated-base border border-background-elevated-highlight transition transition-discrete shadow-lg z-50">
-                            <div 
-                                className="fixed inset-0 z-10" 
-                                onClick={() => setShowUserMenu(false)}
-                            />
-                            {/* Informacion usuario */}
                             <div className="py-1">
                                 <div className="flex items-center justify-start gap-2 px-4 py-2">
-                                    {/* Emblema si es Premium */}
                                     {user?.product === 'premium' && (
                                             <a><PremiumBadge></PremiumBadge></a>
                                         )
@@ -198,11 +217,10 @@ export function Header(){
                                 </div>
                             </div>
                             
-                            {/* Theme Toggle */}
                             <div className="py-1">
                                 <button 
                                     onClick={toggleTheme}
-                                    className="w-full rounded-md text-left px-4 py-2 text-sm text-text-subdued hover:bg-background-elevated-highlight focus:outline-hidden flex items-center gap-2"
+                                    className="w-full rounded-md text-left px-4 py-2 text-sm text-text-subdued hover:bg-background-elevated-highlight cursor-pointer focus:outline-hidden flex items-center gap-2"
                                 >
                                     {theme === 'light' ? (
                                         <>
@@ -222,15 +240,15 @@ export function Header(){
                                 </button>
                             </div>
                             
-                            {/* Logout */}
                             <div className="py-1">
                                 <button 
                                     onClick={handleLogout}
-                                    className="w-full rounded-md text-left px-4 py-2 text-sm text-text-subdued hover:bg-background-elevated-highlight focus:outline-hidden">Logout</button>
+                                    className="w-full rounded-md text-left px-4 py-2 text-sm text-text-subdued hover:bg-background-elevated-highlight focus:outline-hidden cursor-pointer">Logout</button>
                             </div>
                         </div>
                     )}
-                </div>
+                    </div>
+                </>
             ) : (
                 <button 
                     onClick={handleLogin}

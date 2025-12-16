@@ -1,3 +1,5 @@
+import { localStorageUtils } from '@/hooks/useLocalStorage';
+
 // Generar string aleatorio para el parámetro 'state'
 export function generateRandomString(length) {
     const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -9,7 +11,7 @@ export function generateRandomString(length) {
 }
 
 // Construir URL de autorización de Spotify
-export function getSpotifyAuthUrl() {
+export function getSpotifyAuthUrl(forceReauth = false) {
     const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID || '';
     const redirectUri = process.env.NEXT_PUBLIC_REDIRECT_URI || '';
     const state = generateRandomString(16);
@@ -35,7 +37,9 @@ export function getSpotifyAuthUrl() {
         response_type: 'code',
         redirect_uri: redirectUri,
         state: state,
-        scope: scope
+        scope: scope,
+        // Forzar que Spotify muestre el diálogo de autorización nuevamente
+        show_dialog: forceReauth ? 'true' : 'false'
     });
     
     return `https://accounts.spotify.com/authorize?${params.toString()}`;
@@ -45,16 +49,16 @@ export function getSpotifyAuthUrl() {
 export function saveTokens(accessToken, refreshToken, expiresIn) {
     if (typeof window === 'undefined') return;
     const expirationTime = Date.now() + expiresIn * 1000;
-    localStorage.setItem('spotify_token', accessToken);
-    localStorage.setItem('spotify_refresh_token', refreshToken);
-    localStorage.setItem('spotify_token_expiration', expirationTime.toString());
+    localStorageUtils.setRaw('spotify_token', accessToken);
+    localStorageUtils.setRaw('spotify_refresh_token', refreshToken);
+    localStorageUtils.setRaw('spotify_token_expiration', expirationTime.toString());
 }
 
 // Obtener token actual (con verificación de expiración)
 export function getAccessToken() {
     if (typeof window === 'undefined') return null;
-    const token = localStorage.getItem('spotify_token');
-    const expiration = localStorage.getItem('spotify_token_expiration');
+    const token = localStorageUtils.getRaw('spotify_token');
+    const expiration = localStorageUtils.getRaw('spotify_token_expiration');
 
     if (!token || !expiration) return null;
 
@@ -69,13 +73,13 @@ export function getAccessToken() {
 // Obtener refresh token
 export function getRefreshToken() {
     if (typeof window === 'undefined') return null;
-    return localStorage.getItem('spotify_refresh_token');
+    return localStorageUtils.getRaw('spotify_refresh_token');
 }
 
 // Verificar si el token está próximo a expirar (menos de 5 minutos)
 export function isTokenExpiringSoon() {
     if (typeof window === 'undefined') return false;
-    const expiration = localStorage.getItem('spotify_token_expiration');
+    const expiration = localStorageUtils.getRaw('spotify_token_expiration');
     if (!expiration) return false;
     
     const fiveMinutes = 5 * 60 * 1000;
@@ -86,7 +90,8 @@ export function isTokenExpiringSoon() {
 export async function refreshAccessToken() {
     const refreshToken = getRefreshToken();
     if (!refreshToken) {
-        logout();
+        // Si no hay refresh token, simplemente retornar null sin hacer logout
+        // (el usuario podría nunca haber estado logueado)
         return null;
     }
 
@@ -100,6 +105,7 @@ export async function refreshAccessToken() {
         });
 
         if (!response.ok) {
+            // Solo hacer logout si el refresh falló (token inválido)
             logout();
             return null;
         }
@@ -108,13 +114,16 @@ export async function refreshAccessToken() {
         
         // Guardar el nuevo token
         const expirationTime = Date.now() + data.expires_in * 1000;
-        localStorage.setItem('spotify_token', data.access_token);
-        localStorage.setItem('spotify_token_expiration', expirationTime.toString());
+        localStorageUtils.setRaw('spotify_token', data.access_token);
+        localStorageUtils.setRaw('spotify_token_expiration', expirationTime.toString());
         
         return data.access_token;
     } catch (error) {
         console.error('Error refreshing token:', error);
-        logout();
+        // Solo hacer logout si estábamos autenticados
+        if (getAccessToken()) {
+            logout();
+        }
         return null;
     }
 }
@@ -139,7 +148,30 @@ export function isAuthenticated() {
 // Cerrar sesión
 export function logout() {
     if (typeof window === 'undefined') return;
-    localStorage.removeItem('spotify_token');
-    localStorage.removeItem('spotify_refresh_token');
-    localStorage.removeItem('spotify_token_expiration');
+    
+    // Limpiar tokens de autenticación
+    localStorageUtils.removeItem('spotify_token');
+    localStorageUtils.removeItem('spotify_refresh_token');
+    localStorageUtils.removeItem('spotify_token_expiration');
+    
+    // Limpiar datos de usuario y preferencias
+    localStorageUtils.removeItem('spotify_user');
+    localStorageUtils.removeItem('favorite_tracks');
+    localStorageUtils.removeItem('dashboard_presets');
+    localStorageUtils.removeItem('current_playlist');
+    localStorageUtils.removeItem('playlist_history');
+    localStorageUtils.removeItem('saved_playlists');
+    
+    // Limpiar sessionStorage también
+    if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.clear();
+    }
+    
+    // Limpiar todas las cookies del dominio
+    document.cookie.split(";").forEach(function(c) { 
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+    });
+    
+    // Marcar que necesitamos forzar reautenticación
+    sessionStorage.setItem('force_reauth', 'true');
 }

@@ -8,7 +8,7 @@ export default function Home() {
   return (
     <div className='relative flex items-center justify-center h-[calc(100vh-4rem)] px-6 overflow-hidden'>
       
-      {/* Orb Background */}
+      {/* ========================= ORB BACKGROUND ========================= */}
       <div className='absolute inset-0 z-0 opacity-60'>
         <Orb
           hoverIntensity={0.1}
@@ -18,7 +18,7 @@ export default function Home() {
         />
       </div>
       
-      {/* Content */}
+      {/* ========================= CONTENT ========================= */}
       <div className='relative z-10 text-center w-full sm:w-2/3 mx-auto flex flex-col items-center justify-center gap-4'>
         <h1 className='text-4xl sm:text-6xl font-bold'>Spotify MixWave</h1>
         <p className='sm:text-sm text-xs font-medium text-pretty lg:w-2/4 md:w-2/3 sm:w-auto'>

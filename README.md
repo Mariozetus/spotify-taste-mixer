@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
-## Getting Started
+# 🎧 Spotify Taste Mixer
 
-First, run the development server:
+¡Crea playlists personalizadas de Spotify en segundos, según tu mood y preferencias!
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+![Spotify Taste Mixer Banner](public/spotify-mixer-banner.png)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 ¿Qué es Spotify Taste Mixer?
+Spotify Taste Mixer es una aplicación web moderna que te permite generar playlists únicas y personalizadas usando tus artistas, géneros, décadas, popularidad, moods y canciones favoritas de Spotify. Todo con una interfaz visual, rápida y divertida.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## ✨ Características principales
+- **Widgets interactivos** para elegir artistas, géneros, décadas, moods y popularidad
+- **Arrastra y reordena** las canciones de tu playlist generada
+- **Guarda y exporta** tu playlist directamente a tu cuenta de Spotify
+- **Historial** de playlists generadas y favoritas
+- **Modo oscuro/oscuro automático**
+- **Responsive**: funciona perfecto en móvil, tablet y desktop
+- **Login seguro** con OAuth de Spotify
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🖼️ Capturas de pantalla
 
-## Learn More
+![Dashboard](public/screenshots/dashboard.png)
+![Widgets](public/screenshots/widgets.png)
+![Playlist](public/screenshots/playlist.png)
 
-To learn more about Next.js, take a look at the following resources:
+## 🛠️ Instalación y ejecución local
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Clona el repositorio:**
+	```bash
+	git clone https://github.com/tuusuario/spotify-taste-mixer.git
+	cd spotify-taste-mixer
+	```
+2. **Instala dependencias:**
+	```bash
+	npm install
+	```
+3. **Configura tus credenciales de Spotify:**
+	- Crea una app en [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
+	- Copia tu `Client ID` y `Client Secret`
+	- Crea un archivo `.env.local` y añade:
+	  ```env
+	  SPOTIFY_CLIENT_ID=tu_client_id
+	  SPOTIFY_CLIENT_SECRET=tu_client_secret
+	  NEXT_PUBLIC_BASE_URL=http://localhost:3000
+	  ```
+4. **Inicia la app:**
+	```bash
+	npm run dev
+	```
+5. Abre [http://localhost:3000](http://localhost:3000) en tu navegador
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Stack tecnológico
+- **Next.js 14** (App Router)
+- **React 18**
+- **TailwindCSS**
+- **Spotify Web API**
+- **dnd-kit** (drag & drop)
 
-## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Licencia
+MIT
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+> Hecho con ❤️ por Mario

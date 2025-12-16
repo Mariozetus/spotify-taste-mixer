@@ -10,7 +10,6 @@ export default function PlaylistControls({
 }) {
     return (
         <div className="flex flex-col gap-3 sm:gap-4 p-3 sm:p-4 border border-background-elevated-highlight rounded-lg bg-background-elevated-base sticky top-0 z-10">
-            {/* Number of Songs Selector */}
             <div>
                 <label className="flex justify-between text-xs sm:text-sm mb-2">
                     <span className="font-medium">Number of songs</span>
@@ -56,7 +55,7 @@ export default function PlaylistControls({
             <button
                 onClick={onGenerate}
                 disabled={isGenerating}
-                className="w-full px-4 sm:px-6 py-2.5 sm:py-3 font-bold text-sm sm:text-base rounded-full bg-essential-bright-accent text-background-base hover:opacity-90 transition-opacity duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 sm:px-6 py-2.5 sm:py-3 font-bold text-sm sm:text-base rounded-full bg-essential-bright-accent text-background-base hover:opacity-90 transition-opacity duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 {isGenerating ? 'Generating...' : 'Generate Playlist'}
             </button>

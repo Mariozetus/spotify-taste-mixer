@@ -17,12 +17,12 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useDashboardPresets } from "@/hooks/useDashboardPresets";
 import { useModal } from "@/hooks/useModal";
+import { localStorageUtils, storageHelpers } from "@/hooks/useLocalStorage";
 
 export default function Dashboard() {
     const router = useRouter();
     const { isAuthenticated, isLoading } = useAuth();
     
-    // Custom hooks
     const {
         artists,
         genres,
@@ -46,7 +46,6 @@ export default function Dashboard() {
     
     const { modal, showModal, closeModal } = useModal();
 
-    // Local state for playlist
     const [playlist, setPlaylist] = useState([]);
     const [isGenerating, setIsGenerating] = useState(false);
     const [showSaveModal, setShowSaveModal] = useState(false);
@@ -58,19 +57,20 @@ export default function Dashboard() {
         }
     }, [isAuthenticated, isLoading, router]);
 
-    // Load saved playlist from localStorage
+
     useEffect(() => {
         if (typeof window !== 'undefined' && isAuthenticated) {
-            const savedPlaylist = localStorage.getItem('current_playlist');
+            const savedPlaylist = localStorageUtils.getItem('current_playlist');
             if (savedPlaylist) {
                 try {
-                    const { playlist: savedTracks, timestamp } = JSON.parse(savedPlaylist);
-                    // Load playlist if it's less than 1 hour old
+                    const { playlist: savedTracks, timestamp } = savedPlaylist;
+
                     if (Date.now() - timestamp < 60 * 60 * 1000) {
                         setPlaylist(savedTracks);
                         setHasGenerated(true);
-                    } else {
-                        localStorage.removeItem('current_playlist');
+                    } 
+                    else {
+                        localStorageUtils.removeItem('current_playlist');
                     }
                 } catch (e) {
                     console.error('Error loading playlist:', e);
@@ -79,16 +79,15 @@ export default function Dashboard() {
         }
     }, [isAuthenticated]);
 
-    // Save playlist to localStorage whenever it changes
     useEffect(() => {
         if (typeof window !== 'undefined' && playlist.length > 0) {
             const dataToStore = {
-                playlist,
+                playlist: storageHelpers.tracksToStorage(playlist),
                 timestamp: Date.now()
             };
-            localStorage.setItem('current_playlist', JSON.stringify(dataToStore));
+            localStorageUtils.setItem('current_playlist', dataToStore);
         } else if (typeof window !== 'undefined' && playlist.length === 0 && hasGenerated) {
-            localStorage.removeItem('current_playlist');
+            localStorageUtils.removeItem('current_playlist');
         }
     }, [playlist, hasGenerated]);
 
@@ -96,9 +95,9 @@ export default function Dashboard() {
         if (typeof window === 'undefined' || tracks.length === 0 || tracks.length > 100) return;
         
         try {
-            const history = JSON.parse(localStorage.getItem('playlist_history') || '[]');
+            const history = localStorageUtils.getItem('playlist_history', []);
             const newEntry = {
-                tracks,
+                tracks: storageHelpers.tracksToStorage(tracks),
                 timestamp: new Date().toISOString(),
                 filters: {
                     artists: artists.length,
@@ -111,11 +110,11 @@ export default function Dashboard() {
             if (history.length > 20) {
                 history.pop();
             }
-            localStorage.setItem('playlist_history', JSON.stringify(history));
+            localStorageUtils.setItem('playlist_history', history);
         } catch (storageError) {
             console.warn('Could not save to history:', storageError);
             try {
-                localStorage.setItem('playlist_history', JSON.stringify([]));
+                localStorageUtils.setItem('playlist_history', []);
             } catch (e) {
                 console.error('Could not clear history:', e);
             }
@@ -191,15 +190,15 @@ export default function Dashboard() {
                 showModal('Success!', 'Playlist saved to Spotify successfully!', 'success');
                 setShowSaveModal(false);
                 
-                const savedPlaylists = JSON.parse(localStorage.getItem('saved_playlists') || '[]');
+                const savedPlaylists = localStorageUtils.getItem('saved_playlists', []);
                 savedPlaylists.unshift({
                     id: result.playlistId,
                     name,
-                    tracks: playlist,
+                    trackCount: playlist.length,
                     createdAt: new Date().toISOString(),
                     spotifyUrl: result.playlistUrl
                 });
-                localStorage.setItem('saved_playlists', JSON.stringify(savedPlaylists.slice(0, 50)));
+                localStorageUtils.setItem('saved_playlists', savedPlaylists.slice(0, 50));
                 
                 window.open(result.playlistUrl, '_blank');
             }

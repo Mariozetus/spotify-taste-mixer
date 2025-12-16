@@ -6,27 +6,27 @@ export default function MoodWidget({ onSelect, selectedItems }) {
     const moods = [
         { 
             name: 'Happy', 
-            genres: ['pop', 'happy', 'summer', 'party', 'dance'],
+            genres: ['happy', 'pop', 'j-pop', 'k-pop', 'disney', 'children', 'kids', 'ska', 'reggae', 'bossa nova'],
         },
         { 
             name: 'Sad', 
-            genres: ['sad', 'blues', 'melancholy', 'rainy-day', 'emo'],
+            genres: ['sad', 'romance', 'emo', 'blues', 'soul', 'singer-songwriter', 'gospel'],
         },
         { 
             name: 'Energetic', 
-            genres: ['workout', 'power', 'edm', 'electronic', 'gym'],
+            genres: ['dance', 'edm', 'hardstyle', 'hardcore', 'trance', 'techno', 'hip-hop', 'rock', 'hard-rock','heavy-metal', 'punk', 'grindcore', 'metalcore', 'drum-and-bass', 'breakbeat', 'house', 'garage'],
         },
         { 
             name: 'Calm', 
-            genres: ['chill', 'ambient', 'study', 'sleep', 'acoustic'],
+            genres: ['calm', 'ambient', 'new-age', 'chill', 'acoustic', 'classical', 'piano', 'sleep', 'rainy-day'],
         },
         { 
             name: 'Party', 
-            genres: ['party', 'dance', 'club', 'disco', 'groove'],
+            genres: ['party', 'club', 'dancehall', 'salsa', 'reggaeton', 'latin', 'latino', 'disco', 'funk', 'groove', 'brazil', 'samba', 'tango'],
         },
         { 
             name: 'Focus', 
-            genres: ['focus', 'study', 'concentration', 'work', 'instrumental'],
+            genres: ['study', 'classical', 'ambient', 'instrumental', 'jazz', 'idm'],
         }
     ];
 
@@ -75,7 +75,7 @@ export default function MoodWidget({ onSelect, selectedItems }) {
                             <button
                                 key={mood.name}
                                 disabled
-                                className="px-2 sm:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-base font-medium bg-background-elevated-base"
+                                className="px-2 sm:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-base font-medium bg-background-elevated-base cursor-not-allowed"
                             >
                                 <span className="text-base sm:text-lg">{mood.icon}</span>
                                 <span>{mood.name}</span>
@@ -105,7 +105,7 @@ export default function MoodWidget({ onSelect, selectedItems }) {
                 </label>
             </div>
             
-            {/* Moods predefinidos */}
+            {/* ========================= MOODS PREDIFINIDOS ========================= */}
             <div className={`transition-opacity duration-200 ${!isEnabled ? 'opacity-40 pointer-events-none' : ''}`}>
                 <div className="grid grid-cols-2 gap-y-3 sm:gap-y-6 gap-x-2 sm:gap-x-4">
                     {moods.map((mood) => (
@@ -113,7 +113,7 @@ export default function MoodWidget({ onSelect, selectedItems }) {
                             key={mood.name}
                             onClick={() => handleMoodSelect(mood)}
                             disabled={!isEnabled}
-                            className={`px-2 sm:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-base font-medium transition-colors duration-200 flex items-center justify-center gap-1 sm:gap-2 ${
+                            className={`px-2 sm:px-4 py-2 sm:py-3 rounded-lg text-xs sm:text-base font-medium transition-colors duration-200 flex items-center justify-center gap-1 sm:gap-2 cursor-pointer ${
                                 selectedMood === mood.name
                                     ? 'bg-essential-bright-accent text-background-base'
                                     : 'bg-background-elevated-base hover:bg-background-elevated-highlight'

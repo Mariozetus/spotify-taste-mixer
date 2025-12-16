@@ -1,8 +1,13 @@
 'use client';
 
+import { useClickOutside } from '@/hooks/useClickOutside';
 import { useEffect } from 'react';
 
 export default function Modal({ isOpen, onClose, title, message, type = 'info' }) {
+    
+    const dropdownRef = useClickOutside(onClose); 
+
+    
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
@@ -47,7 +52,7 @@ export default function Modal({ isOpen, onClose, title, message, type = 'info' }
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background-base/70 animate-in fade-in duration-200">
-            <div className="bg-background-elevated-base border border-background-elevated-highlight rounded-lg shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-200">
+            <div ref={dropdownRef} className="bg-background-elevated-base border border-background-elevated-highlight rounded-lg shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-200">
                 <div className="flex flex-col items-center text-center">
                     {getIcon()}
                     
@@ -63,7 +68,7 @@ export default function Modal({ isOpen, onClose, title, message, type = 'info' }
                     
                     <button
                         onClick={onClose}
-                        className="mt-6 w-full px-6 py-3 bg-essential-bright-accent hover:opacity-90 text-background-base font-bold rounded-full transition-opacity duration-200"
+                        className="mt-6 w-full px-6 py-3 bg-essential-bright-accent hover:opacity-90 text-background-base font-bold rounded-full transition-opacity duration-200 cursor-pointer"
                     >
                         OK
                     </button>

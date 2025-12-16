@@ -7,6 +7,7 @@ import { savePlaylistToSpotify } from '@/lib/spotify';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useModal } from '@/hooks/useModal';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
 import Modal from '@/components/Modal';
 import ConfirmModal from '@/components/ConfirmModal';
 
@@ -14,7 +15,7 @@ export default function HistoryPage() {
     const router = useRouter();
     const { isAuthenticated, isLoading } = useAuth();
     const { modal, showModal, closeModal } = useModal();
-    const [history, setHistory] = useState([]);
+    const [history, setHistory] = useLocalStorage('playlist_history', []);
     const [isClient, setIsClient] = useState(false);
     const [selectedPlaylist, setSelectedPlaylist] = useState(null);
     const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -28,10 +29,6 @@ export default function HistoryPage() {
             return;
         }
         setIsClient(true);
-        if (typeof window !== 'undefined') {
-            const savedHistory = JSON.parse(localStorage.getItem('playlist_history') || '[]');
-            setHistory(savedHistory);
-        }
     }, [isLoading, isAuthenticated, router]);
 
     const millisecondsToTime = (ms) => {
@@ -50,7 +47,6 @@ export default function HistoryPage() {
         if (playlistToRemove !== null) {
             const updatedHistory = history.filter((_, i) => i !== playlistToRemove);
             setHistory(updatedHistory);
-            localStorage.setItem('playlist_history', JSON.stringify(updatedHistory));
             if (selectedPlaylist === playlistToRemove) {
                 setSelectedPlaylist(null);
             }
@@ -67,7 +63,6 @@ export default function HistoryPage() {
 
     const confirmClearAll = () => {
         setHistory([]);
-        localStorage.setItem('playlist_history', JSON.stringify([]));
         setSelectedPlaylist(null);
         setShowClearConfirm(false);
         showModal('Success', 'All history cleared successfully!', 'success');
@@ -103,7 +98,7 @@ export default function HistoryPage() {
 
     return (
         <div className="h-[calc(100vh-4rem)] p-3 sm:p-4 md:p-6 flex flex-col gap-4 md:gap-6 overflow-y-auto">
-            {/* Header */}
+            {/* ========================= HEADER ========================= */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2 sm:gap-3">
@@ -117,14 +112,14 @@ export default function HistoryPage() {
                 {history.length > 0 && (
                     <button
                         onClick={clearAllHistory}
-                        className="w-full sm:w-auto px-4 py-2 text-sm sm:text-base rounded-full bg-essential-negative text-white hover:opacity-90 transition-opacity duration-200 font-normal"
+                        className="w-full sm:w-auto px-4 py-2 text-sm sm:text-base rounded-full bg-essential-negative text-white hover:opacity-90 transition-opacity duration-200 font-normal cursor-pointer"
                     >
                         Clear All
                     </button>
                 )}
             </div>
 
-            {/* Content */}
+            {/* ========================= CONTENT ========================= */}
             {history.length === 0 ? (
                 <div className="flex-1 flex items-center justify-center">
                     <div className="text-center">
@@ -136,7 +131,7 @@ export default function HistoryPage() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-                    {/* Playlist List */}
+                    {/* ========================= PLAYLIST DISPLAY ========================= */}
                     <div className="space-y-3 sm:space-y-4">
                         {history.map((item, index) => (
                             <div
@@ -163,7 +158,7 @@ export default function HistoryPage() {
                                             e.stopPropagation();
                                             removePlaylist(index);
                                         }}
-                                        className="p-1.5 sm:p-2 hover:bg-background-elevated-press rounded-full transition-colors duration-200"
+                                        className="p-1.5 sm:p-2 cursor-pointer hover:bg-background-elevated-press rounded-full transition-colors duration-200"
                                         title="Remove from history"
                                     >
                                         <FaTrash className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -184,7 +179,7 @@ export default function HistoryPage() {
                         ))}
                     </div>
 
-                    {/* Playlist Details */}
+                    {/* ========================= PLAYLIST DETAILS ========================= */}
                     {selectedPlaylist !== null && history[selectedPlaylist] && (
                         <div className="border border-background-elevated-highlight rounded-lg p-3 sm:p-4 lg:sticky lg:top-6 self-start">
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 sm:mb-4 gap-3">
@@ -193,10 +188,10 @@ export default function HistoryPage() {
                                 </h2>
                                 <button
                                     onClick={() => handleSaveToSpotify(history[selectedPlaylist])}
-                                    className="w-full sm:w-auto px-3 sm:px-4 py-2 text-sm sm:text-base rounded-full bg-essential-bright-accent text-background-base hover:opacity-90 transition-opacity duration-200 font-medium flex items-center justify-center gap-2"
+                                    className="w-full sm:w-auto px-3 sm:px-4 py-2 text-sm sm:text-base rounded-full bg-essential-bright-accent text-background-base hover:opacity-90 transition-opacity cursor-pointer duration-200 font-medium flex items-center justify-center gap-2"
                                 >
                                     <FaSpotify className="w-3 h-3 sm:w-4 sm:h-4" />
-                                    <span className="hidden sm:inline">Save to Spotify</span>
+                                    <span className="hidden sm:inline ">Save to Spotify</span>
                                     <span className="sm:hidden">Save</span>
                                 </button>
                             </div>

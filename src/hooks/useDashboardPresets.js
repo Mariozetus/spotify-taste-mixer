@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { localStorageUtils, storageHelpers } from './useLocalStorage';
 
 const STORAGE_KEY = 'dashboard_presets';
 const EXPIRATION_TIME = 30 * 60 * 1000; // 30 minutes
@@ -20,27 +21,24 @@ export function useDashboardPresets() {
     const [presets, setPresets] = useState(defaultPresets);
     const [hasLoadedPresets, setHasLoadedPresets] = useState(false);
 
-    // Load presets from localStorage on mount
     useEffect(() => {
         if (typeof window === 'undefined') return;
         
-        const stored = localStorage.getItem(STORAGE_KEY);
+        const stored = localStorageUtils.getItem(STORAGE_KEY);
         if (!stored) {
             setHasLoadedPresets(true);
             return;
         }
 
         try {
-            const { data, timestamp } = JSON.parse(stored);
+            const { data, timestamp } = stored;
             
-            // Check if data is expired
             if (Date.now() - timestamp > EXPIRATION_TIME) {
-                localStorage.removeItem(STORAGE_KEY);
+                localStorageUtils.removeItem(STORAGE_KEY);
                 setHasLoadedPresets(true);
                 return;
             }
             
-            // Load saved presets
             setPresets(prev => ({
                 ...prev,
                 ...data
@@ -53,17 +51,25 @@ export function useDashboardPresets() {
         }
     }, []);
 
-    // Save presets to localStorage whenever they change
     useEffect(() => {
         if (typeof window === 'undefined') return;
         if (!hasLoadedPresets) return;
 
         const dataToStore = {
-            data: presets,
+            data: {
+                artists: storageHelpers.artistsToStorage(presets.artists),
+                genres: presets.genres,
+                songs: storageHelpers.songsToStorage(presets.songs),
+                decades: presets.decades,
+                mood: presets.mood,
+                popularity: presets.popularity,
+                includeFavorites: presets.includeFavorites,
+                numSongs: presets.numSongs
+            },
             timestamp: Date.now()
         };
 
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToStore));
+        localStorageUtils.setItem(STORAGE_KEY, dataToStore);
     }, [presets, hasLoadedPresets]);
 
     const updatePreset = useCallback((key, value) => {

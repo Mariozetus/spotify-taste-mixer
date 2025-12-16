@@ -51,7 +51,7 @@ export default function GenreWidget({ onSelect, selectedItems }) {
                                             key={genre}
                                             onClick={() => handleGenreClick(genre)}
                                             disabled={isDisabled}
-                                            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all whitespace-nowrap duration-200 capitalize shrink-0 ${
+                                            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all whitespace-nowrap duration-200 capitalize shrink-0 cursor-pointer ${
                                                 isSelected 
                                                     ? 'bg-essential-bright-accent text-background-base' 
                                                     : isDisabled

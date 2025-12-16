@@ -1,5 +1,6 @@
 'use client';
 
+import { useClickOutside } from '@/hooks/useClickOutside';
 import { useState } from 'react';
 
 export default function SavePlaylistModal({ 
@@ -13,6 +14,7 @@ export default function SavePlaylistModal({
     const [playlistDescription, setPlaylistDescription] = useState(defaultDescription);
     const [playlistCover, setPlaylistCover] = useState(null);
     const [error, setError] = useState(null);
+    const dropdownRef = useClickOutside(onClose);
 
     const handleImageUpload = (e) => {
         const file = e.target.files?.[0];
@@ -60,10 +62,9 @@ export default function SavePlaylistModal({
 
     return (
         <div className="fixed inset-0 bg-background-base bg-opacity-75 flex items-center justify-center z-50 p-4">
-            <div className="bg-background-elevated-base grid grid-cols-1 sm:grid-cols-2 rounded-lg p-4 sm:p-6 max-w-md w-full border border-background-elevated-highlight">
+            <div ref={dropdownRef} className="bg-background-elevated-base grid grid-cols-1 sm:grid-cols-2 rounded-lg p-4 sm:p-6 max-w-md w-full border border-background-elevated-highlight">
                 <h2 className="text-xl sm:text-2xl font-bold mb-4 col-span-1 sm:col-span-2">Save to Spotify</h2>
                 
-                {/* Playlist Cover Image */}
                 <div className="mb-4 sm:mb-6 row-span-1 sm:row-span-2 flex justify-center items-center col-span-1">
                     <label htmlFor="cover-upload" className="cursor-pointer block group">
                         <input
@@ -115,14 +116,12 @@ export default function SavePlaylistModal({
                     </label>
                 </div>
 
-                {/* Error message */}
                 {error && (
                     <div className="col-span-1 sm:col-span-2 mb-3 text-sm text-red-400">
                         {error}
                     </div>
                 )}
 
-                {/* Playlist Name */}
                 <div className="mb-3 sm:mb-4 col-span-1">
                     <label className="block text-xs sm:text-sm font-medium mb-2">Playlist Name</label>
                     <input
@@ -134,7 +133,6 @@ export default function SavePlaylistModal({
                     />
                 </div>
 
-                {/* Playlist Description */}
                 <div className="mb-4 col-span-1 sm:col-span-2">
                     <label className="block text-xs sm:text-sm font-medium mb-2">Description</label>
                     <textarea
@@ -146,18 +144,16 @@ export default function SavePlaylistModal({
                     />
                 </div>
 
-               
-                {/* Buttons */}
                 <div className="flex gap-2 sm:gap-3 col-span-1 sm:col-span-2">
                     <button
                         onClick={handleClose}
-                        className="flex-1 px-3 sm:px-4 py-2 text-sm sm:text-base rounded-full bg-background-elevated-highlight hover:bg-background-elevated-press transition-colors duration-200 font-medium"
+                        className="flex-1 px-3 sm:px-4 py-2 text-sm sm:text-base rounded-full bg-background-elevated-highlight hover:bg-background-elevated-press transition-colors duration-200 font-medium cursor-pointer"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={handleSave}
-                        className="flex-1 px-3 sm:px-4 py-2 text-sm sm:text-base rounded-full bg-essential-bright-accent text-background-base hover:opacity-90 transition-opacity duration-200 font-bold"
+                        className="flex-1 px-3 sm:px-4 py-2 text-sm sm:text-base rounded-full bg-essential-bright-accent text-background-base hover:opacity-90 transition-opacity duration-200 font-bold cursor-pointer"
                     >
                         Save to Spotify
                     </button>
