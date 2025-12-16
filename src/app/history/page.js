@@ -10,6 +10,7 @@ import { useModal } from '@/hooks/useModal';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import Modal from '@/components/Modal';
 import ConfirmModal from '@/components/ConfirmModal';
+import SavePlaylistModal from '@/components/SavePlaylistModal';
 
 export default function HistoryPage() {
     const router = useRouter();
@@ -21,6 +22,8 @@ export default function HistoryPage() {
     const [showClearConfirm, setShowClearConfirm] = useState(false);
     const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
     const [playlistToRemove, setPlaylistToRemove] = useState(null);
+    const [showSaveModal, setShowSaveModal] = useState(false);
+    const [playlistToSave, setPlaylistToSave] = useState(null);
 
     useEffect(() => {
         if (isLoading) return;
@@ -68,22 +71,13 @@ export default function HistoryPage() {
         showModal('Success', 'All history cleared successfully!', 'success');
     };
 
-    const handleSaveToSpotify = async (playlist) => {
-        try {
-            const result = await savePlaylistToSpotify(
-                playlist.tracks,
-                playlist.name || 'My Taste Mix',
-                'Created with Spotify Taste Mixer from history'
-            );
-            if (result.success) {
-                showModal('Success!', 'Playlist saved to Spotify successfully!', 'success');
-                window.open(result.playlistUrl, '_blank');
-            }
-        } catch (error) {
-            console.error('Error saving to Spotify:', error);
-            const errorMessage = error.response?.data?.error?.message || error.message || 'Unknown error';
-            showModal('Save Error', `Error saving playlist to Spotify: ${errorMessage}`, 'error');
-        }
+    const handleSaveClick = (playlist) => {
+        setPlaylistToSave(playlist);
+        setShowSaveModal(true);
+    };
+
+    const handleSaveSuccess = () => {
+        showModal('Success!', 'Playlist saved to Spotify successfully!', 'success');
     };
 
     if (!isClient) {
@@ -187,7 +181,7 @@ export default function HistoryPage() {
                                     {history[selectedPlaylist].name || `Playlist ${history.length - selectedPlaylist}`}
                                 </h2>
                                 <button
-                                    onClick={() => handleSaveToSpotify(history[selectedPlaylist])}
+                                    onClick={() => handleSaveClick(history[selectedPlaylist])}
                                     className="w-full sm:w-auto px-3 sm:px-4 py-2 text-sm sm:text-base rounded-full bg-essential-bright-accent text-background-base hover:opacity-90 transition-opacity cursor-pointer duration-200 font-medium flex items-center justify-center gap-2"
                                 >
                                     <FaSpotify className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -266,6 +260,17 @@ export default function HistoryPage() {
                 title="Remove Playlist"
                 message="Are you sure you want to remove this playlist from history?"
                 confirmText="Remove"
+            />
+
+            <SavePlaylistModal
+                isOpen={showSaveModal}
+                onClose={() => {
+                    setShowSaveModal(false);
+                    setPlaylistToSave(null);
+                }}
+                tracks={playlistToSave?.tracks || []}
+                defaultName={playlistToSave?.name || 'My Taste Mix'}
+                onSuccess={handleSaveSuccess}
             />
 
             <Modal 

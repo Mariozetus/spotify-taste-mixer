@@ -206,13 +206,11 @@ export async function generatePlaylist(preferences, numSongs = 50, includeFavori
             while (allTracks.length < targetTracks && currentIteration < maxIterations) {
                 currentIteration++;
                 const tracksNeeded = targetTracks - allTracks.length;
-                const tracksPerArtist = Math.ceil(tracksNeeded / artists.length); 
+                const tracksPerArtist = Math.min(Math.ceil(tracksNeeded / artists.length), 50); 
                 
                 for (const artist of artists) {
                     try {
-                        const response = await searchTracks(`artist:"${artist.name}"`, tracksPerArtist);
-                        if (response.data.tracks && response.data.tracks.items) {
-                            // Filtrar para asegurar que son del artista correcto
+                        const response = await searchTracks(artist.name, tracksPerArtist);                        if (response.data.tracks && response.data.tracks.items) {
                             const artistTracks = response.data.tracks.items.filter(track =>
                                 track.artists.some(a => a.id === artist.id)
                             );
