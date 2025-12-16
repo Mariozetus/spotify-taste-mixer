@@ -3,7 +3,7 @@
 
 ¡Crea playlists personalizadas de Spotify en segundos, según tu mood y preferencias!
 
-![Spotify Taste Mixer Banner](public/spotify-mixer-banner.png)
+<img width="2559" height="1189" alt="imagen" src="https://github.com/user-attachments/assets/177ed198-5b49-4610-9630-29fcabb20315" />
 
 ## 🚀 ¿Qué es Spotify Taste Mixer?
 Spotify Taste Mixer es una aplicación web moderna que te permite generar playlists únicas y personalizadas usando tus artistas, géneros, décadas, popularidad, moods y canciones favoritas de Spotify. Todo con una interfaz visual, rápida y divertida.
@@ -19,9 +19,9 @@ Spotify Taste Mixer es una aplicación web moderna que te permite generar playli
 
 ## 🖼️ Capturas de pantalla
 
-![Dashboard](public/screenshots/dashboard.png)
-![Widgets](public/screenshots/widgets.png)
-![Playlist](public/screenshots/playlist.png)
+<img width="2559" height="1187" alt="imagen" src="https://github.com/user-attachments/assets/c1069f90-7fa0-47ed-bd73-453410c77265" />
+
+<img width="2559" height="1183" alt="imagen" src="https://github.com/user-attachments/assets/763a7272-716d-41cc-bbe1-7bbfb6175ad0" />
 
 ## 🛠️ Instalación y ejecución local
 
